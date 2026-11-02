@@ -1,0 +1,25 @@
+# GitHub CODEOWNERS
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+[[files]]
+  stub        = 'configs/stubs/.github/CODEOWNERS'
+  source      = 'configs/templates/.github/CODEOWNERS'
+  destination = '.github/CODEOWNERS'
+
+# Developer Certificate of Origin (DCO)
+# https://github.com/dcoapp/app
+[[files]]
+  stub        = 'configs/stubs/.github/dco.yml'
+  source      = 'configs/templates/.github/dco.yml'
+  destination = '.github/dco.yml'
+
+# FUNDING
+[[files]]
+  stub        = 'configs/stubs/.github/FUNDING.yml'
+  source      = 'configs/templates/.github/FUNDING.yml'
+  destination = '.github/FUNDING.yml'
+
+# GitHub issue templates
+# https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository
+[[files]]
+  stub        = 'configs/stubs/.github/ISSUE_TEMPLATE/'
+  destination = '.github/ISSUE_TEMPLATE/'

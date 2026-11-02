@@ -1,0 +1,38 @@
+# @config-manager:start lines
+line-length  = 120
+indent-width = 4
+# @config-manager:end lines
+
+[format]
+  # @config-manager:start format
+  indent-style              = "space"
+  quote-style               = "preserve"
+  skip-magic-trailing-comma = false
+  # @config-manager:end format
+
+[lint]
+  select = [
+    # @config-manager:start lint-select
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    # @config-manager:end lint-select
+  ]
+
+  ignore = [
+    # @config-manager:start lint-ignore
+    "COM812", # missing trailing comma — formatter handles this
+    "COM819", # prohibited trailing comma — formatter handles this
+    "D203",   # 1 blank line required before class docstring — always conflicts with formatter
+    "D206",   # docstring indented with tabs
+    "D300",   # use triple double-quotes
+    "E111",   # indentation is not a multiple of four spaces
+    "E114",   # indentation is not a multiple of four (comment)
+    "E117",   # over-indented
+    "Q000",   # bad quotes (inline string)
+    "Q001",   # bad quotes (multiline string)
+    "Q002",   # bad quotes (docstring)
+    "Q003",   # avoidable escaped quote
+    "Q004",   # unnecessary escaped quote
+    "W191",   # indentation contains tabs (formatter enforces spaces)
+    # @config-manager:end lint-ignore
+  ]

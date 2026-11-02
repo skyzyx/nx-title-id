@@ -1,0 +1,80 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+##
+# https://taskfile.dev/docs/guide
+##
+
+# @config-manager:start python
+version: "3"
+
+set: [pipefail]
+shopt: [globstar]
+
+vars:
+
+tasks:
+  #-----------------------------------------------------------------------------
+  # Building
+
+  publish:py:
+    desc: Publish the code to Pypi
+    summary: |
+      Publishes the code to Pypi.
+    cmds:
+      - task: internal:header
+        vars:
+          TEXT: "Publishing the code to Pypi..."
+      - cmd: uv publish
+    requires:
+      vars:
+        - UV_PUBLISH_TOKEN
+
+  build:py:
+    desc: Bundle the code into a package
+    summary: |
+      Bundles the code into a package.
+    cmds:
+      - task: internal:header
+        vars:
+          TEXT: "Packaging the code for release..."
+      - cmd: uv build
+
+  deps:py:
+    desc: Update packages to their latest versions supported by the range in pyproject.toml.
+    summary: |
+      Updates packages to their latest versions supported by the range in pyproject.toml.
+
+      This is useful for keeping the dependencies up to date with little effort.
+    cmds:
+      - task: internal:header
+        vars:
+          TEXT: "Upgrade Python dependencies..."
+      - cmd: uv lock --upgrade
+
+  #-----------------------------------------------------------------------------
+  # Testing
+
+  test:py:
+    desc: "Run Python testing tasks."
+    summary: |
+      Runs Python testing tasks.
+    cmds:
+      - cmd: uv run tryke test
+
+  #-------------------------------------------------------------------------------
+  # Documentation
+
+  #-----------------------------------------------------------------------------
+  # Cleanup
+
+  clean:py:
+    desc: Clean Python artifacts
+    summary: Cleans Python artifacts.
+    cmds:
+      - task: internal:header
+        vars:
+          TEXT: "Cleaning Python cache and artifacts..."
+      - cmd: rm -rfv .hypothesis .ruff_cache .tryke .venv *.egg-info/ **/__pycache__ dist/
+
+# @config-manager:end python

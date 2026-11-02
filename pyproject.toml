@@ -1,0 +1,41 @@
+[project]
+  name = "nx-title-id"
+  dynamic = ["version"]
+  description = "Print the title ID of the Nintendo Switch game packages (.nsp, .nsz, .xci, .xcz) in a folder"
+  readme = "README.md"
+  license = "MIT"
+  license-files = ["LICENSE"]
+  authors = [{email = "ryan@ryanparman.com", name = "Ryan Parman"}]
+  requires-python = ">=3.14"
+  dependencies = [
+    "pycryptodome>=4.2,<5", # AES for the meta NCA fallback; imported only when a package needs it
+  ]
+  keywords = ["nintendo-switch", "nsp", "nsz", "nx", "nx-title-id", "xci"]
+  classifiers = ["Environment :: Console", "Operating System :: OS Independent", "Programming Language :: Python :: 3"]
+
+  [project.scripts]
+    nx-title-id = "nx_title_id:main"
+
+[build-system]
+  requires      = ["hatchling>=1.27,<2"]
+  build-backend = "hatchling.build"
+
+[tool.hatch.version]
+  path = "src/nx_title_id/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+  packages = ["src/nx_title_id"]
+
+# Keep repo tooling/config out of the source distribution.
+[tool.hatch.build.targets.sdist]
+  include = ["/CHANGELOG.md", "/LICENSE", "/README.md", "/src"]
+
+[dependency-groups]
+  dev = [
+    "cryptography==50.0.2", # reference AES-XTS to check the hand-rolled one in the tests
+    "tryke==0.0.30",
+  ]
+
+# Resolve `from nx_title_id import ...` in tests/ to src/ for Tryke's import graph.
+[tool.tryke]
+  src = [".", "src"]

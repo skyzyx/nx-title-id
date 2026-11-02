@@ -1,0 +1,35 @@
+---
+# @config-manager:start pinact-defaults
+version: 3
+min_age:
+  # threshold in days
+  value: 3
+  # also run the passive audit on every `pinact run` (extra GitHub API calls)
+  always: true
+separator: " # "
+# @config-manager:end pinact-defaults
+
+files:
+  # @config-manager:start pinact-standard-files
+  - pattern: ".github/workflows/*.yml"
+  - pattern: ".github/workflows/*.yaml"
+  - pattern: "action.yml"
+  - pattern: "action.yaml"
+  - pattern: "*/action.yml"
+  - pattern: "*/action.yaml"
+  - pattern: "*/*/action.yml"
+  - pattern: "*/*/action.yaml"
+  - pattern: "*/*/*/action.yml"
+  - pattern: "*/*/*/action.yaml"
+    # @config-manager:end pinact-standard-files
+
+rules:
+  # @config-manager:start pinact-standard-rules
+  - min_age: 0
+    conditions:
+      - expr: |
+          ActionName matches "step-security/harden-runner"
+      - expr: |
+          ActionName matches "github/codeql-action"
+
+# @config-manager:end pinact-standard-rules

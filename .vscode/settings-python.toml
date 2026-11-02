@@ -1,0 +1,27 @@
+# @config-manager:start python-top-level
+'python.analysis.autoFormatStrings'                     = true
+'python.analysis.autoImportCompletions'                 = true
+'python.analysis.completeFunctionParens'                = true
+'python.analysis.inlayHints.functionReturnTypes'        = true
+'python.analysis.inlayHints.pytestParameters'           = true
+'python.analysis.inlayHints.variableTypes'              = true
+'python.analysis.typeCheckingMode'                      = 'strict'
+'python.analysis.typeEvaluation.deprecateTypingAliases' = true
+'python.defaultInterpreterPath'                         = 'python3'
+'python.languageServer'                                 = 'Pylance'
+'python.missingPackage.severity'                        = 'Information'
+'python.pythonPath'                                     = '${workspaceFolder}/.venv/'
+'python.terminal.activateEnvInCurrentTerminal'          = true
+'pythonTestExplorer.testFramework'                      = 'pytest'
+'yapf.args'                                             = ['*.py', '-i']
+# @config-manager:end python-top-level
+
+# @config-manager:start python
+['[python]']
+  'editor.defaultFormatter' = 'charliermarsh.ruff'
+  'editor.formatOnType'     = true
+
+  ['[python]'.'editor.codeActionsOnSave']
+    'source.fixAll.ruff'     = 'explicit'
+    'source.organizeImports' = 'always'
+    # @config-manager:end python

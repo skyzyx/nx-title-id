@@ -1,0 +1,115 @@
+# ─── Header Comment ───────────────────────────────────────────────────────────
+
+# @config-manager:start header
+# @config-manager:end header
+
+# ─── Ignore Directories ───────────────────────────────────────────────────────
+
+ignore-dirs = [
+  # @config-manager:start ignore-dirs
+  # @config-manager:end ignore-dirs
+]
+
+# ─── Ecosystem Default Values ─────────────────────────────────────────────────
+
+# @config-manager:start ecosystem-global
+# @config-manager:end ecosystem-global
+
+# @config-manager:start ecosystem-bazel
+# @config-manager:end ecosystem-bazel
+
+# @config-manager:start ecosystem-bun
+# @config-manager:end ecosystem-bun
+
+# @config-manager:start ecosystem-bundler
+# @config-manager:end ecosystem-bundler
+
+# @config-manager:start ecosystem-cargo
+# @config-manager:end ecosystem-cargo
+
+# @config-manager:start ecosystem-composer
+# @config-manager:end ecosystem-composer
+
+# @config-manager:start ecosystem-conda
+# @config-manager:end ecosystem-conda
+
+# @config-manager:start ecosystem-deno
+# @config-manager:end ecosystem-deno
+
+# @config-manager:start ecosystem-devcontainers
+# @config-manager:end ecosystem-devcontainers
+
+# @config-manager:start ecosystem-docker
+# @config-manager:end ecosystem-docker
+
+# @config-manager:start ecosystem-docker-compose
+# @config-manager:end ecosystem-docker-compose
+
+# @config-manager:start ecosystem-dotnet-sdk
+# @config-manager:end ecosystem-dotnet-sdk
+
+# @config-manager:start ecosystem-elm
+# @config-manager:end ecosystem-elm
+
+# @config-manager:start ecosystem-github-actions
+# @config-manager:end ecosystem-github-actions
+
+# @config-manager:start ecosystem-gitsubmodule
+# @config-manager:end ecosystem-gitsubmodule
+
+# @config-manager:start ecosystem-gomod
+# @config-manager:end ecosystem-gomod
+
+# @config-manager:start ecosystem-gradle
+# @config-manager:end ecosystem-gradle
+
+# @config-manager:start ecosystem-helm
+# @config-manager:end ecosystem-helm
+
+# @config-manager:start ecosystem-julia
+# @config-manager:end ecosystem-julia
+
+# @config-manager:start ecosystem-maven
+# @config-manager:end ecosystem-maven
+
+# @config-manager:start ecosystem-mix
+# @config-manager:end ecosystem-mix
+
+# @config-manager:start ecosystem-nix
+# @config-manager:end ecosystem-nix
+
+# @config-manager:start ecosystem-npm
+# @config-manager:end ecosystem-npm
+
+# @config-manager:start ecosystem-nuget
+# @config-manager:end ecosystem-nuget
+
+# @config-manager:start ecosystem-opentofu
+# @config-manager:end ecosystem-opentofu
+
+# @config-manager:start ecosystem-pip
+# @config-manager:end ecosystem-pip
+
+# @config-manager:start ecosystem-pre-commit
+# @config-manager:end ecosystem-pre-commit
+
+# @config-manager:start ecosystem-pub
+# @config-manager:end ecosystem-pub
+
+# @config-manager:start ecosystem-rust-toolchain
+# @config-manager:end ecosystem-rust-toolchain
+
+# @config-manager:start ecosystem-sbt
+# @config-manager:end ecosystem-sbt
+
+# @config-manager:start ecosystem-swift
+# @config-manager:end ecosystem-swift
+
+# @config-manager:start ecosystem-terraform
+# @config-manager:end ecosystem-terraform
+
+# @config-manager:start ecosystem-uv
+# @config-manager:end ecosystem-uv
+
+# @config-manager:start ecosystem-vcpkg
+# @config-manager:end ecosystem-vcpkg

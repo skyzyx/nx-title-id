@@ -1,0 +1,64 @@
+#-------------------------------------------------------------------------------
+# DEFAULT FILES
+
+# Standardized formatter for Python files.
+# https://docs.astral.sh/ruff/
+[[files]]
+  stub        = 'configs/stubs/ruff.toml'
+  source      = 'configs/templates/ruff.toml'
+  destination = 'ruff.toml'
+
+  #-------------------------------------------------------------------------------
+  # KIRO DIRECTORY
+
+[[files]]
+  stub        = 'configs/stubs/.kiro/steering/python-code-conventions.md'
+  source      = 'configs/templates/.kiro/steering/python-code-conventions.md'
+  destination = '.kiro/steering/python-code-conventions.md'
+
+[[files]]
+  stub = 'configs/stubs/.kiro/steering/tryke-testing.md'
+  source = 'configs/templates/.kiro/steering/tryke-testing.md'
+  destination = '.kiro/steering/tryke-testing.md'
+
+  #-------------------------------------------------------------------------------
+  # VSCODE DIRECTORY
+
+# Merges multiple TOML files together using `dasel` and `jq`.
+[[files]]
+  stub        = 'configs/stubs/.vscode/extensions-python.toml'
+  source      = 'configs/templates/.vscode/extensions-python.toml'
+  destination = '.vscode/extensions-python.toml'
+
+  [files.post_update_hook]
+    bash = 'bash .vscode/extensions.sh'
+
+# Standardized LLM rules.
+[[files]]
+  stub        = 'configs/stubs/.vscode/settings-python.toml'
+  source      = 'configs/templates/.vscode/settings-python.toml'
+  destination = '.vscode/settings-python.toml'
+
+  [files.post_update_hook]
+    bash = 'bash .vscode/settings.sh'
+
+    #-------------------------------------------------------------------------------
+    # TOOLING
+
+[[files]]
+  stub        = 'configs/stubs/tools/Taskfile.python.yml'
+  source      = 'configs/templates/tools/Taskfile.python.yml'
+  destination = 'tools/Taskfile.python.yml'
+
+  #-------------------------------------------------------------------------------
+  # FILES WITH HOOKS
+
+# Brewfile tools
+# https://docs.brew.sh/Brew-Bundle-and-Brewfile
+[[files]]
+  stub        = 'configs/stubs/tools/Brewfile.standard'
+  source      = 'configs/templates/tools/Brewfile.standard'
+  destination = 'tools/Brewfile.standard'
+
+  [files.post_update_hook]
+    bash = 'brew bundle --upgrade --upgrade-formulae --install --jobs=auto --file=tools/Brewfile.python'

@@ -1,0 +1,90 @@
+# Shellcheck for shell scripts
+# https://github.com/koalaman/shellcheck
+[[files]]
+  stub        = 'configs/stubs/shellcheckrc'
+  source      = 'configs/templates/shellcheckrc'
+  destination = '.shellcheckrc'
+
+# Shuck is a replacement for Shellcheck and shfmt.
+# https://ewhauser.github.io/shuck/
+[[files]]
+  stub        = 'configs/stubs/shuck.toml'
+  source      = 'configs/templates/shuck.toml'
+  destination = '.shuck.toml'
+
+# OSV Scanner
+# https://osv.dev
+[[files]]
+  stub        = 'configs/stubs/osv-scanner.toml'
+  destination = 'osv-scanner.toml'
+
+# Trivy for vulnerability and license scanning
+# https://trivy.dev
+[[files]]
+  stub        = 'configs/stubs/trivyignore.yaml'
+  destination = '.trivyignore.yaml'
+  replaces    = ['.trivyignore']
+
+[[files]]
+  stub        = 'configs/stubs/trivy-license.yaml'
+  source      = 'configs/templates/trivy-license.yaml'
+  destination = 'trivy-license.yaml'
+
+[[files]]
+  stub        = 'configs/stubs/trivy-vuln.yaml'
+  source      = 'configs/templates/trivy-vuln.yaml'
+  destination = 'trivy-vuln.yaml'
+
+# Standardized formatter for YAML files.
+# https://github.com/google/yamlfmt
+[[files]]
+  stub        = 'configs/stubs/yamlfmt.yml'
+  destination = '.yamlfmt.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/codeql.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+    'configs/templates/.github/workflows/codeql.yml',
+  ]
+  destination = '.github/workflows/codeql.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/osv-scanner.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+    'configs/templates/.github/workflows/osv-scanner.yml',
+  ]
+  destination = '.github/workflows/osv-scanner.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/test.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+  ]
+  destination = '.github/workflows/test.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/trufflehog.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+    'configs/templates/.github/workflows/trufflehog.yml',
+  ]
+  destination = '.github/workflows/trufflehog.yml'
+
+  #-------------------------------------------------------------------------------
+  # STEERING FILES
+
+[[files]]
+  stub        = 'configs/stubs/.kiro/steering/commit-rules.md'
+  source      = 'configs/templates/.kiro/steering/commit-rules.md'
+  destination = '.kiro/steering/commit-rules.md'
+
+[[files]]
+  stub = 'configs/stubs/.kiro/steering/fd-instead-of-find.md'
+  source = 'configs/templates/.kiro/steering/fd-instead-of-find.md'
+  destination = '.kiro/steering/fd-instead-of-find.md'

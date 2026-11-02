@@ -1,0 +1,10 @@
+#-------------------------------------------------------------------------------
+# DEFAULT FILES
+
+# rumdl replaces Markdownlint
+# https://rumdl.dev
+[[files]]
+  stub        = 'configs/stubs/rumdl.toml'
+  source      = 'configs/templates/rumdl.toml'
+  destination = '.rumdl.toml'
+  replaces    = ['.markdownlint.json', '.markdownlintrc', 'markdownlint.config.toml']

@@ -1,0 +1,103 @@
+#-------------------------------------------------------------------------------
+# KIRO DIRECTORY
+
+[[files]]
+  stub        = 'configs/stubs/.kirograph/'
+  destination = '.kirograph/'
+
+[[files]]
+  stub        = 'configs/stubs/.kirograph/.gitignore'
+  source      = 'configs/templates/.kirograph/.gitignore'
+  destination = '.kirograph/.gitignore'
+
+[[files]]
+  stub        = 'configs/stubs/.kiro/steering/add-code-comments.md'
+  source      = 'configs/templates/.kiro/steering/add-code-comments.md'
+  destination = '.kiro/steering/add-code-comments.md'
+
+[[files]]
+  stub        = 'configs/stubs/.kiro/steering/comprehensive-and-quickstart.md'
+  source      = 'configs/templates/.kiro/steering/comprehensive-and-quickstart.md'
+  destination = '.kiro/steering/comprehensive-and-quickstart.md'
+
+[[files]]
+  stub        = 'configs/stubs/.kiro/steering/generate-agents-md.md'
+  source      = 'configs/templates/.kiro/steering/generate-agents-md.md'
+  destination = '.kiro/steering/generate-agents-md.md'
+
+[[files]]
+  stub        = 'configs/stubs/.kiro/steering/markdown-style.md'
+  source      = 'configs/templates/.kiro/steering/markdown-style.md'
+  destination = '.kiro/steering/markdown-style.md'
+
+[[files]]
+  stub        = 'configs/stubs/.kiro/steering/root-level-readme.md'
+  source      = 'configs/templates/.kiro/steering/root-level-readme.md'
+  destination = '.kiro/steering/root-level-readme.md'
+
+  #-------------------------------------------------------------------------------
+  # VSCODE DIRECTORY
+
+[[files]]
+  stub        = 'configs/stubs/.vscode/README.md'
+  source      = 'configs/templates/.vscode/README.md'
+  destination = '.vscode/README.md'
+
+# Merges multiple TOML files together using `dasel` and `jq`.
+[[files]]
+  stub        = 'configs/stubs/.vscode/extensions.sh'
+  source      = 'configs/templates/.vscode/extensions.sh'
+  destination = '.vscode/extensions.sh'
+  executable  = true
+
+# Merges multiple TOML files together using `dasel` and `jq`.
+[[files]]
+  stub        = 'configs/stubs/.vscode/settings.sh'
+  source      = 'configs/templates/.vscode/settings.sh'
+  destination = '.vscode/settings.sh'
+  executable  = true
+
+# Merges multiple TOML files together using `dasel` and `jq`.
+[[files]]
+  stub        = 'configs/stubs/.vscode/extensions-standard.toml'
+  source      = 'configs/templates/.vscode/extensions-standard.toml'
+  destination = '.vscode/extensions-standard.toml'
+
+  [files.post_update_hook]
+    bash = 'bash .vscode/extensions.sh'
+
+# Standardized LLM rules.
+[[files]]
+  stub        = 'configs/stubs/.vscode/settings-llm.toml'
+  source      = 'configs/templates/.vscode/settings-llm.toml'
+  destination = '.vscode/settings-llm.toml'
+
+  [files.post_update_hook]
+    bash = 'bash .vscode/settings.sh'
+
+# This just creates the TOML header for `runonsave`, allowing VSCode to run
+# certain tasks on save.
+[[files]]
+  stub        = 'configs/stubs/.vscode/settings-ros.toml'
+  source      = 'configs/templates/.vscode/settings-ros.toml'
+  destination = '.vscode/settings-ros.toml'
+
+  [files.post_update_hook]
+    bash = 'bash .vscode/settings.sh'
+
+# Standard configs that apply to every single project (Markdown, JSON, YAML, TOML).
+[[files]]
+  stub        = 'configs/stubs/.vscode/settings-standard.toml'
+  source      = 'configs/templates/.vscode/settings-standard.toml'
+  destination = '.vscode/settings-standard.toml'
+
+  [files.post_update_hook]
+    bash = 'bash .vscode/settings.sh'
+
+    #-------------------------------------------------------------------------------
+    # TOOLING
+
+[[files]]
+  stub        = 'configs/stubs/tools/Taskfile.kiro.yml'
+  source      = 'configs/templates/tools/Taskfile.kiro.yml'
+  destination = 'tools/Taskfile.kiro.yml'

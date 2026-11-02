@@ -1,0 +1,58 @@
+#-------------------------------------------------------------------------------
+# DEFAULT FILES
+
+# GitHub Dependabot config
+# https://docs.github.com/en/code-security/tutorials/secure-your-dependencies/dependabot-quickstart-guide
+[[files]]
+  stub        = 'configs/stubs/depgen.toml'
+  destination = '.depgen.toml'
+
+# Pinact
+# https://github.com/suzuki-shunsuke/pinact
+[[files]]
+  stub        = 'configs/stubs/pinact.yaml'
+  source      = 'configs/templates/pinact.yaml'
+  destination = '.pinact.yaml'
+
+# Security scan for GitHub Actions
+# https://docs.zizmor.sh
+[[files]]
+  stub        = 'configs/stubs/.github/zizmor.yml'
+  source      = 'configs/templates/.github/zizmor.yml'
+  destination = '.github/zizmor.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/dependabot-auto-merge.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+    'configs/templates/.github/workflows/dependabot-auto-merge.yml',
+  ]
+  destination = '.github/workflows/dependabot-auto-merge.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/dependency-review.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+    'configs/templates/.github/workflows/dependency-review.yml',
+  ]
+  destination = '.github/workflows/dependency-review.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/scorecard.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+    'configs/templates/.github/workflows/scorecard.yml',
+  ]
+  destination = '.github/workflows/scorecard.yml'
+
+[[files]]
+  stub = 'configs/stubs/.github/workflows/update-on-push.yml'
+  source = [
+    'configs/templates/.github/workflows/__harden-hosts.yml',
+    'configs/templates/.github/workflows/__reusable-steps.yml',
+    'configs/templates/.github/workflows/update-on-push.yml',
+  ]
+  destination = '.github/workflows/update-on-push.yml'

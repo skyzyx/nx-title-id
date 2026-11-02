@@ -1,0 +1,155 @@
+#-------------------------------------------------------------------------------
+# CORE TOOLS
+
+# Brewfile tools
+# https://docs.brew.sh/Brew-Bundle-and-Brewfile
+[[files]]
+  stub        = 'configs/stubs/tools/Brewfile.standard'
+  source      = 'configs/templates/tools/Brewfile.standard'
+  destination = 'tools/Brewfile.standard'
+
+  [files.post_update_hook]
+    bash = 'brew bundle --upgrade --upgrade-formulae --install --file=tools/Brewfile.standard'
+
+    #-------------------------------------------------------------------------------
+    # DEFAULT FILES
+
+# git-cliff
+# https://git-cliff.org
+[[files]]
+  stub        = 'configs/stubs/cliff.toml'
+  source      = 'configs/templates/cliff.toml'
+  destination = 'cliff.toml'
+
+[[files]]
+  stub        = 'configs/stubs/CHANGELOG.md'
+  destination = 'CHANGELOG.md'
+
+# Snyk: Ignore definition
+# https://snyk.io
+[[files]]
+  stub        = 'configs/stubs/dcignore'
+  source      = 'configs/templates/dcignore'
+  destination = '.dcignore'
+
+# EditorConfig definition
+# https://editorconfig.org
+[[files]]
+  stub        = 'configs/stubs/editorconfig.ini'
+  source      = 'configs/templates/editorconfig.ini'
+  destination = '.editorconfig'
+
+# How to handle files in Git
+# https://git-scm.com/docs/gitattributes
+[[files]]
+  stub        = 'configs/stubs/gitattributes'
+  source      = 'configs/templates/gitattributes'
+  destination = '.gitattributes'
+
+[[files]]
+  stub        = 'configs/stubs/gitignore'
+  destination = '.gitignore'
+
+# Don't change `git blame` for these commits (project-specific).
+# https://git-scm.com/docs/git-fsck#Documentation/git-fsck.txt-fsckskipList
+# https://git-scm.com/docs/git-config#Documentation/git-config.txt-blameignoreRevsFile
+[[files]]
+  stub        = 'configs/stubs/git-blame-ignore-revs'
+  destination = '.git-blame-ignore-revs'
+
+# Enforce conventional commit messages.
+# https://github.com/antham/gommit
+[[files]]
+  stub        = 'configs/stubs/gommit.toml'
+  source      = 'configs/templates/gommit.toml'
+  destination = '.gommit.toml'
+
+# Precommit hooks
+# https://hk.jdx.dev
+[[files]]
+  stub        = 'configs/stubs/hk.pkl'
+  source      = 'configs/templates/hk.pkl'
+  destination = 'hk.pkl'
+  replaces    = ['.pre-commit']
+
+# Detect broken links.
+# https://lychee.cli.rs
+[[files]]
+  stub        = 'configs/stubs/lychee.toml'
+  source      = 'configs/templates/lychee.toml'
+  destination = 'lychee.toml'
+
+# Mailmap
+# https://git-scm.com/docs/gitmailmap
+[[files]]
+  stub        = 'configs/stubs/mailmap'
+  destination = '.mailmap'
+
+# Taplo formatter for TOML files
+# https://taplo.tamasfe.dev
+[[files]]
+  stub        = 'configs/stubs/taplo.toml'
+  source      = 'configs/templates/taplo.toml'
+  destination = '.taplo.toml'
+
+[[files]]
+  stub        = 'configs/stubs/scripts/generate-contributors.sh'
+  source      = 'configs/templates/scripts/generate-contributors.sh'
+  destination = 'scripts/generate-contributors.sh'
+  executable  = true
+
+  #-------------------------------------------------------------------------------
+  # TOOLING
+
+# Imported taskfiles
+# https://taskfile.dev/docs/guide#flatten-includes
+[[files]]
+  stub        = 'configs/stubs/make-file'
+  source      = 'configs/templates/make-file'
+  destination = 'Makefile'
+
+[[files]]
+  stub        = 'configs/stubs/Taskfile.dist.yml'
+  source      = 'configs/templates/Taskfile.dist.yml'
+  destination = 'Taskfile.dist.yml'
+
+[[files]]
+  stub        = 'configs/stubs/tools/Taskfile.admin.yml'
+  source      = 'configs/templates/tools/Taskfile.admin.yml'
+  destination = 'tools/Taskfile.admin.yml'
+
+[[files]]
+  stub        = 'configs/stubs/tools/Taskfile.gitconfig.yml'
+  source      = 'configs/templates/tools/Taskfile.gitconfig.yml'
+  destination = 'tools/Taskfile.gitconfig.yml'
+
+[[files]]
+  stub        = 'configs/stubs/tools/Taskfile.internal.yml'
+  source      = 'configs/templates/tools/Taskfile.internal.yml'
+  destination = 'tools/Taskfile.internal.yml'
+
+[[files]]
+  stub        = 'configs/stubs/tools/ogvs.config.yaml'
+  source      = 'configs/templates/tools/ogvs.config.yaml'
+  destination = 'tools/ogvs.config.yaml'
+
+  #-------------------------------------------------------------------------------
+  # FILES WITH HOOKS
+
+# EditorConfig Checker
+# https://editorconfig-checker.github.io
+[[files]]
+  stub        = 'configs/stubs/ecrc.toml'
+  source      = 'configs/templates/ecrc.toml'
+  destination = 'ecrc.toml'
+
+  [files.post_update_hook]
+    bash = 'tomljson ecrc.toml > .editorconfig-checker.json'
+
+    #-------------------------------------------------------------------------------
+    # STEERING FILES
+
+[[files]]
+  stub        = 'configs/stubs/.kiro/steering/core-premises.md'
+  source      = 'configs/templates/.kiro/steering/core-premises.md'
+  destination = '.kiro/steering/core-premises.md'

@@ -1,0 +1,10 @@
+recommendations = [
+  # @config-manager:start python
+  'charliermarsh.ruff',
+  'littlefoxteam.vscode-python-test-adapter',
+  'meta.pyrefly',
+  'ms-python.python',
+  'njpwerner.autodocstring',
+  'thebutlah.reorder-python-imports',
+  # @config-manager:end python
+]
