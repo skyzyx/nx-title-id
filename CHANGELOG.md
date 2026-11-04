@@ -6,17 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 
 ## Unreleased
 
-### Changed
+[Compare: v1.0.0 → `HEAD`](https://github.com/skyzyx/nx-title-id/compare/v1.0.0..HEAD)
 
-* A folder that resolves to several games (including a single multi-title package) now exits with code `3` instead of `0`.
-* A keys file without a `header_key` is now a warning, not a fatal error.
+### :tractor: Refactor
 
-### Added
+* [`d959b19`](https://github.com/skyzyx/nx-title-id/commit/d959b19eace4f648f1d8ac7721675f2fcf722c83): Remove bot git configuration and add contributors file. ([@skyzyx](https://github.com/skyzyx))
 
-* A package holding several base games contributes every one of them to the result.
+### <!-- 0 -->:rocket: Features
 
-### Fixed
+* [`917ece8`](https://github.com/skyzyx/nx-title-id/commit/917ece8c42ff64bdf0499090d4cbd054de35fc6c): Implement robustness hardening with multi-title support and improved error handling. ([@skyzyx](https://github.com/skyzyx))
 
-* Unreadable packages are skipped with a stderr message instead of crashing.
-* An unreadable keys file produces a one-line error instead of a traceback.
-* Oversized PFS0/HFS0 headers are rejected before reading.
+### <!-- 1 -->:bug: Bug Fixes
+
+* [`c7f88a9`](https://github.com/skyzyx/nx-title-id/commit/c7f88a967f1582cf17bce088bfd52b4c381abd00): Updated GitHub Actions workflow to target correct repository. ([@skyzyx](https://github.com/skyzyx))
+* [`3081aca`](https://github.com/skyzyx/nx-title-id/commit/3081aca245441ad1a3e36e5642eee44464887a02): Update GitHub Actions workflow repository owner. ([@skyzyx](https://github.com/skyzyx))
+
+## 1.0.0 — 2026-11-02
+
+### <!-- 0 -->:rocket: Features
+
+* [`c739411`](https://github.com/skyzyx/nx-title-id/commit/c73941109850cd6386c0ea97def62e5db9c16b45): Set up nx-title-id project with complete tooling and infrastructure. ([@skyzyx](https://github.com/skyzyx))
+
+<p>Generated on 2026-11-04.</p>
