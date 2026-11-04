@@ -250,9 +250,6 @@ jobs:
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          git config user.name "Northwood Labs (Bot)"
-          git config user.email "bot@northwood-labs.com"
-
           set +e
 
           git add .
