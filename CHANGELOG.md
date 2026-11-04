@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 
 * [`c7f88a9`](https://github.com/skyzyx/nx-title-id/commit/c7f88a967f1582cf17bce088bfd52b4c381abd00): Updated GitHub Actions workflow to target correct repository. ([@skyzyx](https://github.com/skyzyx))
 * [`3081aca`](https://github.com/skyzyx/nx-title-id/commit/3081aca245441ad1a3e36e5642eee44464887a02): Update GitHub Actions workflow repository owner. ([@skyzyx](https://github.com/skyzyx))
+* [`8bc24c6`](https://github.com/skyzyx/nx-title-id/commit/8bc24c625f62d0115e6a83ae5e1c8aabd3d5788a): Correct change detection logic in GitHub Actions. ([@skyzyx](https://github.com/skyzyx))
 
 ### <!-- ZZZ -->:gear: Miscellaneous Tasks
 

@@ -254,7 +254,7 @@ jobs:
 
           git update-index -q --ignore-submodules --refresh
 
-          if git diff-files --quiet --ignore-submodules; then
+          if ! git diff-files --quiet --ignore-submodules; then
             echo "::notice::CHANGELOG.md or CONTRIBUTORS had changes."
 
             git add CHANGELOG.md CONTRIBUTORS
