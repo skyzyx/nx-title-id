@@ -239,7 +239,7 @@ jobs:
       # @config-manager:end workflow-cleanup
 
       # @config-manager:start workflow-contributors
-      - name: Generate artifacts
+      - name: Generate list of authors
         run: |
           # Generate list of authors
           ./scripts/generate-contributors.sh
@@ -254,9 +254,11 @@ jobs:
 
           git update-index -q --ignore-submodules --refresh
 
-          if [[ "$(git diff-files --quiet --ignore-submodules)" -ne 0 ]]; then
-            git add .
-            git commit -a -m "automation: Updated AUTHORS and CHANGELOG on $(date)."
+          if git diff-files --quiet --ignore-submodules; then
+            echo "::notice::CHANGELOG.md or CONTRIBUTORS had changes."
+
+            git add CHANGELOG.md CONTRIBUTORS
+            git commit -a -m "automation: Updated CONTRIBUTORS and CHANGELOG on $(date)."
             git pull --rebase --autostash
             git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" main
           fi
