@@ -1,0 +1,13 @@
+{
+  "hooks": [
+    {
+      "action": {
+        "prompt": "If this session produced durable knowledge (design decisions, architecture insights, API contracts, process steps, domain facts), consider updating the wiki:\n1. Call kirograph_wiki_ingest with the key findings as source text.\n2. The tool returns a structured prompt. Pass it to yourself to generate a WIKI_DIFF.\n3. Call kirograph_wiki_apply_diff with your generated diff.\nSkip if the session was trivial (simple bug fix, no new knowledge).",
+        "type": "agent"
+      },
+      "name": "KiroGraph Wiki Ingest",
+      "trigger": "Stop"
+    }
+  ],
+  "version": "v1"
+}

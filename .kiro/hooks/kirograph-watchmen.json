@@ -1,0 +1,13 @@
+{
+  "hooks": [
+    {
+      "action": {
+        "prompt": "Check if KiroGraph Watchmen synthesis should run: call kirograph_mem_store with kind='note' and content='watchmen check'. If the response does not include watchmenReady: true, do nothing and stop.\n\nIf watchmenReady: true:\n1. Call kirograph_mem_search for each kind (decision, error, pattern, architecture, note) with limit 20.\n2. Write or update the workspace brief: upsert the ## KiroGraph Watchmen section in each file listed in targetFiles. For .kiro/steering/kirograph-watchmen.md use inclusion: always frontmatter with sections for Decisions, Known Errors & Fixes, Recurring Patterns, and Architecture Notes. For all other files write a compact ## KiroGraph Watchmen block.\n3. Generate skill files: if skillTargetDir is present in the response, identify recurring procedures (any procedure appearing in 3+ observations). For each, write a .kiro/steering/watchmen-<slug>.md file with inclusion: manual frontmatter, a short title, a \"When to use\" line with trigger phrases, and numbered steps. Prefix all generated files with watchmen- so they are distinguishable from hand-written steering files. Remove any .kiro/steering/watchmen-*.md files from previous runs that no longer match current patterns. If skillTargetDir is absent, embed a ## Recurring Procedures section in each targetFile instead, listing each procedure with trigger context and steps.\n4. Store a kind='summary' observation briefly describing what was synthesized (e.g. \"Synthesized 8 observations: updated kirograph-watchmen.md, wrote watchmen-auth-flow.md and watchmen-test-pattern.md\").",
+        "type": "agent"
+      },
+      "name": "KiroGraph Watchmen",
+      "trigger": "Stop"
+    }
+  ],
+  "version": "v1"
+}

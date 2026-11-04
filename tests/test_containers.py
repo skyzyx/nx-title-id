@@ -2,6 +2,7 @@
 PFS0 / HFS0 / XCI container parsing: partition(), package_files(), is_package().
 """
 
+import random
 import struct
 import tempfile
 from collections.abc import Iterator
@@ -10,9 +11,10 @@ from typing import Annotated
 
 from tryke import Depends, describe, expect, fixture, test
 
-from nx_title_id import MalformedPackageError, is_package, package_files, partition
+from nx_title_id import MAX_ENTRIES, MAX_STRINGS_SIZE, MalformedPackageError, is_package, package_files, partition
 from tests.builders import (
     HAVE_REAL_NSPS,
+    HFS0_ENTRY_SIZE,
     NO_REAL_NSPS,
     PFS0_ENTRY_SIZE,
     hfs0,
@@ -83,6 +85,31 @@ with describe('partition'):
         expect(lambda: partition(reader(data), 0, b'PFS0', PFS0_ENTRY_SIZE)).to_raise(
             MalformedPackageError, match='truncated'
         )
+
+    @test(name='within-limit headers parse to the builder entries (seeded)')
+    def within_limits_round_trip() -> None:
+        # Property 3, 8 (preservation): a valid PFS0 or HFS0 header within the
+        # sanity limits parses to the same names, in order, each at the offset
+        # where its data bytes actually are. A seeded loop stands in for a
+        # property generator (no hypothesis dep).
+        # Validates: Requirements 3.6
+        rng = random.Random(0)
+
+        for _ in range(200):
+            count: int = rng.randint(0, 20)
+            files: list[tuple[str, bytes]] = [
+                (f'f{j}_{rng.randrange(0x1000):03x}.nca', bytes(rng.getrandbits(8) for _ in range(rng.randint(0, 32))))
+                for j in range(count)
+            ]
+            magic: bytes = rng.choice([b'PFS0', b'HFS0'])
+            entry_size: int = PFS0_ENTRY_SIZE if magic == b'PFS0' else HFS0_ENTRY_SIZE
+            data: bytes = pfs0(files) if magic == b'PFS0' else hfs0(files)
+            entries: list[tuple[str, int]] = partition(reader(data), 0, magic, entry_size)
+
+            expect([name for name, _ in entries]).to_equal([name for name, _ in files])
+
+            for (_, body), (_, at) in zip(files, entries, strict=True):
+                expect(data[at : at + len(body)]).to_equal(body)
 
 
 with describe('package_files'):
@@ -158,3 +185,61 @@ with describe('real NSPs'):
         expect(tickets[0][:16]).to_equal(f'{tid:016x}')
         expect([n for n in names if n.endswith('.cnmt.nca')]).to_have_length(1)
         expect(all(0 < at < size for _, at in files)).to_be_truthy()
+
+
+with describe('partition oversized headers (bug condition B)'):
+    # The sanity limits come from the module: MAX_ENTRIES, MAX_STRINGS_SIZE.
+
+    @test.cases(
+        test.case('PFS0', magic=b'PFS0', entry_size=PFS0_ENTRY_SIZE),
+        test.case('HFS0', magic=b'HFS0', entry_size=HFS0_ENTRY_SIZE),
+    )
+    def count_at_limit_passes_the_guard(magic: bytes, entry_size: int) -> None:
+        # A header declaring exactly MAX_ENTRIES entries passes the limit guard;
+        # the entry bytes are absent, so it fails as 'truncated', not 'limit'.
+        # Validates: Requirements 2.3, 2.4
+        data: bytes = magic + struct.pack('<III', MAX_ENTRIES, 0, 0)
+
+        expect(lambda: partition(reader(data), 0, magic, entry_size)).to_raise(MalformedPackageError, match='truncated')
+
+    @test.cases(
+        test.case('PFS0', magic=b'PFS0', entry_size=PFS0_ENTRY_SIZE),
+        test.case('HFS0', magic=b'HFS0', entry_size=HFS0_ENTRY_SIZE),
+    )
+    def oversized_entries(magic: bytes, entry_size: int) -> None:
+        # A header declaring MAX_ENTRIES + 1 entries, with no entry bytes present:
+        # a 'limit' error raised after reading only the 16-byte header.
+        # Validates: Requirements 2.3, 2.4
+        data: bytes = magic + struct.pack('<III', MAX_ENTRIES + 1, 0, 0)
+        r = reader(data)
+
+        expect(lambda: partition(r, 0, magic, entry_size)).to_raise(MalformedPackageError, match='limit')
+        expect(r.tell()).to_equal(16)
+
+    @test.cases(
+        test.case('PFS0', magic=b'PFS0', entry_size=PFS0_ENTRY_SIZE),
+        test.case('HFS0', magic=b'HFS0', entry_size=HFS0_ENTRY_SIZE),
+    )
+    def strings_at_limit_passes_the_guard(magic: bytes, entry_size: int) -> None:
+        # A header declaring 0 entries and exactly MAX_STRINGS_SIZE string bytes
+        # passes the limit guard; the string bytes are absent, so it fails as
+        # 'truncated', not 'limit'.
+        # Validates: Requirements 2.3, 2.4
+        data: bytes = magic + struct.pack('<III', 0, MAX_STRINGS_SIZE, 0)
+
+        expect(lambda: partition(reader(data), 0, magic, entry_size)).to_raise(MalformedPackageError, match='truncated')
+
+    @test.cases(
+        test.case('PFS0', magic=b'PFS0', entry_size=PFS0_ENTRY_SIZE),
+        test.case('HFS0', magic=b'HFS0', entry_size=HFS0_ENTRY_SIZE),
+    )
+    def oversized_strings(magic: bytes, entry_size: int) -> None:
+        # A header declaring 0 entries and a MAX_STRINGS_SIZE + 1 byte string
+        # table, with no string bytes present: a 'limit' error raised after
+        # reading only the 16-byte header.
+        # Validates: Requirements 2.3, 2.4
+        data: bytes = magic + struct.pack('<III', 0, MAX_STRINGS_SIZE + 1, 0)
+        r = reader(data)
+
+        expect(lambda: partition(r, 0, magic, entry_size)).to_raise(MalformedPackageError, match='limit')
+        expect(r.tell()).to_equal(16)

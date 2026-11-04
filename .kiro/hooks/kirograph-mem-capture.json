@@ -1,0 +1,13 @@
+{
+  "hooks": [
+    {
+      "action": {
+        "prompt": "Before ending, review what happened in this session. If there were any important decisions, bug root causes, architecture insights, error patterns, or lessons learned, store them using kirograph_mem_store with the appropriate kind (decision, error, pattern, architecture, note). Keep observations concise — one fact per observation. Skip if nothing noteworthy happened.",
+        "type": "agent"
+      },
+      "name": "KiroGraph Memory Capture",
+      "trigger": "Stop"
+    }
+  ],
+  "version": "v1"
+}

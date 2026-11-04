@@ -45,6 +45,11 @@ NO_REAL_NSPS: str = 'the real .nsp files are not in tests/'
 REAL_KEYS: Path = Path.home() / '.switch' / 'prod.keys'
 HAVE_REAL_KEYS: bool = REAL_KEYS.is_file()
 
+# A real multi-title collection cartridge, gitignored like the real NSPs, so
+# the tests using it skip when it's absent (a fresh clone, CI).
+HAVE_FF_XCI: bool = (TESTS_DIR / 'ff.xci').is_file()
+NO_FF_XCI: str = 'tests/ff.xci is not present'
+
 # ------------------------------------------------------------------------------
 # CLASSES
 
