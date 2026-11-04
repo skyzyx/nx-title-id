@@ -193,7 +193,7 @@ jobs:
           private-key: ${{ secrets.CHANGELOG_PRIVATE_KEY }}
           owner: northwood-labs
           repositories: |
-            tomlrt-cli
+            nx-title-id
           permission-contents: write
 
       # @config-manager:start github-app-userid
