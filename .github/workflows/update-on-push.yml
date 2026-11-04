@@ -252,8 +252,10 @@ jobs:
         run: |
           set +e
 
-          git add .
-          if [[ "$(git status)" -eq 0 ]]; then
+          git update-index -q --ignore-submodules --refresh
+
+          if [[ "$(git diff-files --quiet --ignore-submodules)" -ne 0 ]]; then
+            git add .
             git commit -a -m "automation: Updated AUTHORS and CHANGELOG on $(date)."
             git pull --rebase --autostash
             git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" main
