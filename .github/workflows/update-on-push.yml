@@ -191,7 +191,7 @@ jobs:
         with:
           client-id: ${{ vars.CHANGELOG_CLIENT_ID }}
           private-key: ${{ secrets.CHANGELOG_PRIVATE_KEY }}
-          owner: northwood-labs
+          owner: skyzyx
           repositories: |
             nx-title-id
           permission-contents: write
