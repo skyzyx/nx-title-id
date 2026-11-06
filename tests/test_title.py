@@ -5,14 +5,35 @@ ticket → tag → meta NCA order, and base-game normalization.
 
 import os
 import random
+import struct
 import tempfile
 from collections.abc import Callable, Iterator
+from io import BufferedReader
 from pathlib import Path
 from typing import Annotated
 
 from tryke import Depends, describe, expect, fixture, test
 
-from nx_title_id import application_of, meta_title_of, read_header_key, title_ids_of, xts_decrypt_sector
+from nx_title_id import (
+    BUILD_ID_SIZE,
+    FS_ENTRY_AT,
+    FS_HEADER_AT,
+    HEADER_REGION,
+    MODULE_ID_SIZE,
+    application_of,
+    build_id_of,
+    decrypt_nca_header,
+    exefs_section,
+    meta_title_of,
+    module_id_of,
+    read_header_key,
+    read_titlekeks,
+    render_build_id,
+    title_ids_of,
+    title_key_of,
+    update_version_of,
+    xts_decrypt_sector,
+)
 from tests.builders import (
     BASE,
     DLC_1,
@@ -27,13 +48,22 @@ from tests.builders import (
     SECTOR,
     UPDATE,
     Run,
+    exefs,
+    meta_nca,
     nca_header,
     nintendo_xts_encrypt,
     pfs0,
+    program_nca,
+    program_package,
+    reader,
     real_nsp,
+    rights_id_of,
     run_cli,
+    ticket,
     ticket_name,
+    titlekey_package,
     write_keys,
+    write_titlekek_keys,
     xci,
 )
 
@@ -63,6 +93,26 @@ def _no_key() -> bytes | None:
     A header_key callable that fails the test if title_ids_of() calls it.
     """
     raise AssertionError('header_key() was called')
+
+
+def _decrypted_header(fs_type: int, encryption_type: int, blocks: int) -> bytes:
+    """
+    A minimal decrypted 0xC00 NCA header for exefs_section to walk: ContentType
+    PROGRAM, one FsEntry at FS_ENTRY_AT spanning `blocks` 0x200 blocks from
+    StartOffset 0, and one FsHeader at FS_HEADER_AT with the given FsType (at
+    +0x2, as on real NCAs) and EncryptionType. Builds the plaintext directly (no
+    crypto) because exefs_section takes the already-decrypted header, so the
+    absent-section and unsupported-encryption variants need no round-trip
+    through XTS.
+    """
+    header = bytearray(HEADER_REGION)
+    header[0x200:0x204] = b'NCA3'
+    header[0x205] = PROGRAM
+    struct.pack_into('<II', header, FS_ENTRY_AT, 0, blocks)
+    header[FS_HEADER_AT + 0x2] = fs_type
+    header[FS_HEADER_AT + 0x4] = encryption_type
+
+    return bytes(header)
 
 
 # ------------------------------------------------------------------------------
@@ -109,6 +159,41 @@ with describe('xts_decrypt_sector'):
         cipher: bytes = nintendo_xts_encrypt(HEADER_KEY, plain, 1)
 
         expect(xts_decrypt_sector(HEADER_KEY, cipher, 2)).not_.to_equal(plain)
+
+
+with describe('decrypt_nca_header'):
+
+    @test(name='round-trips a 0xC00 region encrypted sector by sector')
+    def round_trip() -> None:
+        # Six 0x200 sectors numbered 0..5, each encrypted under its own sector
+        # tweak, so the whole-region decrypt must reverse all of them in place.
+        sectors: int = HEADER_REGION // SECTOR
+        plains: list[bytes] = [os.urandom(SECTOR) for _ in range(sectors)]
+        plain: bytes = b''.join(plains)
+        cipher: bytes = b''.join(nintendo_xts_encrypt(HEADER_KEY, p, i) for i, p in enumerate(plains))
+
+        expect(decrypt_nca_header(HEADER_KEY, cipher)).to_equal(plain)
+
+    @test(name='a truncated region decrypts only the sectors present')
+    def truncated() -> None:
+        # The reader slices raw[at:at+0x200] per sector, so an input shorter
+        # than 0xC00 yields only the bytes the present sectors decrypt to: here
+        # two whole sectors plus a half third, the rest simply absent.
+        present: int = 2 * SECTOR + SECTOR // 2
+        plain: bytes = os.urandom(present)
+        cipher = bytearray()
+
+        for sector in range(HEADER_REGION // SECTOR):
+            at: int = sector * SECTOR
+            chunk: bytes = plain[at : at + SECTOR]
+
+            # XTS needs whole 16-byte blocks; the builder's reference and the
+            # production reader agree on a 0x200-aligned half sector, so slice
+            # the same way and only encrypt what is actually there.
+            if chunk:
+                cipher += nintendo_xts_encrypt(HEADER_KEY, chunk, sector)
+
+        expect(decrypt_nca_header(HEADER_KEY, bytes(cipher))).to_equal(plain)
 
 
 with describe('meta_title_of'):
@@ -344,3 +429,396 @@ with describe('real NSPs'):
     def real_meta(tid: int) -> None:
         # decrypts the real NCA headers; the key itself never reaches the output
         expect(meta_title_of(real_nsp(tid), read_header_key(REAL_KEYS))).to_equal({tid})
+
+
+with describe('exefs_section'):
+
+    @test(name='returns the exact exefs bytes for a None-encrypted section')
+    def none_exact() -> None:
+        # Validates: Requirements 2.1
+        # The builder lays the exefs right after the 0xC00 header region with a
+        # PartitionFS/None FsEntry+FsHeader whose PfsOffset/PfsSize name it;
+        # exefs_section must hand back exactly the PFS0 bytes.
+        module_id: bytes = bytes(range(8))
+        blob: bytes = program_nca(module_id)
+        f: BufferedReader = reader(blob)
+
+        header: bytes = decrypt_nca_header(HEADER_KEY, blob[:HEADER_REGION])
+        section: bytes | None = exefs_section(f, 0, header, None)
+
+        expect(section).to_equal(exefs(module_id))
+
+    @test(name='honors a non-zero nca_at when locating the section')
+    def none_offset() -> None:
+        # Validates: Requirements 2.1
+        # The PFS0 offset is nca_at + StartOffset*0x200 + PfsOffset, so a
+        # program NCA placed partway through the reader must still resolve to the
+        # same exefs bytes when nca_at names where it starts.
+        module_id: bytes = bytes(range(4))
+        blob: bytes = program_nca(module_id)
+        pad: int = 0x400
+        f: BufferedReader = reader(bytes(pad) + blob)
+
+        header: bytes = decrypt_nca_header(HEADER_KEY, blob[:HEADER_REGION])
+        section: bytes | None = exefs_section(f, pad, header, None)
+
+        expect(section).to_equal(exefs(module_id))
+
+    @test(name='returns None when no PartitionFS section is present')
+    def absent_section() -> None:
+        # Validates: Requirements 4.3
+        # Every FsHeader slot defaults to FsType 0, so a header whose only
+        # populated slot is a non-PartitionFS type (here FsType 2) offers no
+        # exefs for exefs_section to find.
+        header: bytes = _decrypted_header(fs_type=2, encryption_type=1, blocks=1)
+        f: BufferedReader = reader(header + bytes(SECTOR))
+
+        expect(exefs_section(f, 0, header, None)).to_equal(None)
+
+    @test(name='returns None for an unsupported EncryptionType')
+    def unsupported_encryption() -> None:
+        # Validates: Requirements 4.3
+        # A PartitionFS section declaring AesCtr (3) is the retail path the None
+        # reader does not implement yet, so the whole package is skipped rather
+        # than a half-decrypted section returned.
+        header: bytes = _decrypted_header(fs_type=1, encryption_type=3, blocks=1)
+        f: BufferedReader = reader(header + bytes(SECTOR))
+
+        expect(exefs_section(f, 0, header, None)).to_equal(None)
+
+
+with describe('module_id_of'):
+
+    @test(name='round-trips any 0..32-byte ModuleId through a synthetic program NCA (seeded)')
+    def module_id_round_trip(d: Annotated[Path, Depends(workdir)]) -> None:
+        # Feature: build-id, Property 1: ModuleId round-trip
+        # For any ModuleId up to 32 bytes, embedding it in a synthetic program
+        # NCA's main NSO and extracting via module_id_of returns the exact bytes
+        # present, padded to MODULE_ID_SIZE. module_id_of returns the whole
+        # fixed 0x20 field bytes[0x40:0x60], and the builder lays the ModuleId
+        # at 0x40 zero-padded to 0x20, so the honest round-trip is the exact
+        # bytes followed by zero padding to MODULE_ID_SIZE. A seeded loop stands
+        # in for a property generator (no hypothesis dep).
+        # Validates: Requirements 2.1, 6.2
+        rng = random.Random(0)
+
+        for i in range(100):
+            module_id: bytes = rng.randbytes(rng.randint(0, MODULE_ID_SIZE))
+            pkg: Path = d / f'game{i}.nsp'
+            pkg.write_bytes(program_package(BASE, module_id))
+
+            extracted: bytes | None = module_id_of(pkg, HEADER_KEY, None)
+
+            expect(extracted).to_equal(module_id.ljust(MODULE_ID_SIZE, b'\0'))
+
+    @test(name='renders the first 8 bytes of any 8..32-byte ModuleId as 16 uppercase hex digits (seeded)')
+    def hex_rendering() -> None:
+        # Feature: build-id, Property 2: Build-ID rendering is the first 8 bytes as uppercase hex
+        # For any ModuleId field of 8..32 bytes (module_id_of always yields the
+        # full 32-byte field), render_build_id, the helper the CLI prints,
+        # returns exactly 16 uppercase hex digits that decode back to the first
+        # 8 bytes, ignoring everything after them. A seeded loop stands in for
+        # a property generator (no hypothesis dep).
+        # Validates: Requirements 2.2
+        rng = random.Random(0)
+
+        for _ in range(100):
+            raw: bytes = rng.randbytes(rng.randint(BUILD_ID_SIZE, MODULE_ID_SIZE))
+            rendered: str = render_build_id(raw)
+
+            expect(rendered).to_equal(rendered.upper())
+            expect(len(rendered)).to_equal(2 * BUILD_ID_SIZE)
+            expect(bytes.fromhex(rendered.lower())).to_equal(raw[:BUILD_ID_SIZE])
+
+
+with describe('update_version_of'):
+
+    @test(name='reads the same version from an XCI as from an NSP')
+    def same_version_nsp_and_xci(d: Annotated[Path, Depends(workdir)]) -> None:
+        # The version lives inside the NCA header, so it must not depend on
+        # which container (PFS0 vs XCI secure partition) wraps the meta NCA.
+        meta: bytes = meta_nca(UPDATE, version=65536)
+        nsp: Path = d / 'game.nsp'
+        cart: Path = d / 'game.xci'
+        nsp.write_bytes(pfs0([('meta.cnmt.nca', meta)]))
+        cart.write_bytes(xci([('meta.cnmt.nca', meta)]))
+
+        expect(update_version_of(nsp, HEADER_KEY)).to_equal(65536)
+        expect(update_version_of(cart, HEADER_KEY)).to_equal(65536)
+
+
+with describe('build_id_of'):
+
+    @test(name='picks the newest update, any update over the base, base when alone (seeded)')
+    def newest_update_selection(d: Annotated[Path, Depends(workdir)]) -> None:
+        # Feature: build-id, Property 3: Newest-update selection is monotonic in version
+        # For a base game plus a random set of update packages with distinct
+        # embedded ModuleIds and distinct versions, build_id_of reports the
+        # greatest-readable-version update's ModuleId; an update always beats
+        # the base (even when every update version is unreadable, where the
+        # least sorted path wins); and a base-only input resolves to the base's
+        # ModuleId. Each ModuleId is padded to MODULE_ID_SIZE because
+        # module_id_of returns the whole fixed 0x20 field. A seeded loop stands
+        # in for a property generator (no hypothesis dep).
+        # Validates: Requirements 3.1, 3.2, 3.3
+        rng = random.Random(0)
+
+        for i in range(100):
+            scenario: Path = d / f'iter{i}'
+            scenario.mkdir()
+
+            # The base package: version=None (it is the base). Its ModuleId is
+            # distinct from every update's, drawn without replacement below.
+            update_count: int = rng.randint(0, 5)
+
+            # Draw update_count + 1 distinct ModuleIds (one base, the rest
+            # updates) without replacement, each a random 8..32-byte sequence
+            # tagged with its index so collisions are impossible.
+            module_ids: list[bytes] = []
+
+            while len(module_ids) < update_count + 1:
+                candidate: bytes = bytes([len(module_ids)]) + rng.randbytes(rng.randint(7, 31))
+
+                if candidate not in module_ids:
+                    module_ids.append(candidate)
+
+            base_module_id: bytes = module_ids[0]
+            update_module_ids: list[bytes] = module_ids[1:]
+
+            base_path: Path = scenario / 'base.nsp'
+            base_path.write_bytes(program_package(BASE, base_module_id))
+            packages: list[tuple[Path, set[int]]] = [(base_path, {BASE})]
+
+            # Some iterations make every update version unreadable (None -> the
+            # builder writes 0 -> update_version_of returns None), exercising
+            # the all-unreadable fallback; otherwise draw distinct positive
+            # versions so the greatest is unambiguous.
+            unreadable: bool = update_count > 0 and rng.random() < 0.3
+            versions: list[int | None] = []
+
+            if unreadable:
+                versions = [None] * update_count
+            else:
+                drawn: set[int] = set()
+
+                while len(drawn) < update_count:
+                    drawn.add(rng.randint(1, 1_000_000))
+
+                versions = list(drawn)
+                rng.shuffle(versions)
+
+            # Write each update to a distinct filename so the paths have a known
+            # sort order (update0.nsp < update1.nsp < ...); this lets the
+            # all-unreadable case be asserted precisely as the least path.
+            update_paths: list[Path] = []
+
+            for j, (update_module_id, version) in enumerate(zip(update_module_ids, versions, strict=True)):
+                update_path: Path = scenario / f'update{j}.nsp'
+                update_path.write_bytes(program_package(UPDATE, update_module_id, version=version))
+                update_paths.append(update_path)
+                packages.append((update_path, {UPDATE}))
+
+            result: bytes | None = build_id_of(packages, BASE, HEADER_KEY, None)
+
+            if update_count == 0:
+                # Base-only input resolves to the base package's ModuleId.
+                expect(result).to_equal(base_module_id.ljust(MODULE_ID_SIZE, b'\0'))
+
+                continue
+
+            if unreadable:
+                # Every update version is unreadable, so build_id_of falls back
+                # to the least sorted update path; update0.nsp sorts least.
+                least_path: Path = min(update_paths)
+                least_index: int = update_paths.index(least_path)
+                expected: bytes = update_module_ids[least_index].ljust(MODULE_ID_SIZE, b'\0')
+            else:
+                # The greatest readable version wins; versions are distinct, so
+                # the max is unambiguous and beats the base.
+                best_version: int = max(v for v in versions if v is not None)
+                best_index: int = versions.index(best_version)
+                expected = update_module_ids[best_index].ljust(MODULE_ID_SIZE, b'\0')
+
+            expect(result).to_equal(expected)
+            expect(result).not_.to_equal(base_module_id.ljust(MODULE_ID_SIZE, b'\0'))
+
+    @test(name='never resolves a DLC package, even when it is the only package (seeded)')
+    def dlc_exclusion(d: Annotated[Path, Depends(workdir)]) -> None:
+        # Feature: build-id, Property 4: DLC packages never supply the Build ID
+        # For DLC packages (title ID BASE + 0x1000 + i) mixed with an optional
+        # base and optional updates, each carrying a distinct embedded
+        # ModuleId, build_id_of never reports any DLC's ModuleId. DLC-only
+        # input resolves to None; otherwise it resolves to the max-version
+        # update's ModuleId, or the base's when there are no updates. Each
+        # ModuleId is padded to MODULE_ID_SIZE because module_id_of returns the
+        # whole fixed 0x20 field. A seeded loop stands in for a property
+        # generator (no hypothesis dep).
+        # Validates: Requirements 3.4
+        rng = random.Random(0)
+
+        for i in range(100):
+            scenario: Path = d / f'iter{i}'
+            scenario.mkdir()
+
+            # Cycle the shapes so every one is exercised many times: DLC only,
+            # DLC + base, and DLC + base + updates.
+            shape: int = i % 3
+            dlc_count: int = rng.randint(1, 4)
+            update_count: int = rng.randint(1, 4) if shape == 2 else 0
+            has_base: bool = shape != 0
+
+            # Distinct ModuleIds across base, updates, and DLCs, tagged with
+            # their index so collisions are impossible.
+            total: int = dlc_count + update_count + (1 if has_base else 0)
+            module_ids: list[bytes] = []
+
+            while len(module_ids) < total:
+                candidate: bytes = bytes([len(module_ids)]) + rng.randbytes(rng.randint(7, 31))
+
+                if candidate not in module_ids:
+                    module_ids.append(candidate)
+
+            dlc_module_ids: list[bytes] = module_ids[:dlc_count]
+            update_module_ids: list[bytes] = module_ids[dlc_count : dlc_count + update_count]
+            base_module_ids: list[bytes] = module_ids[dlc_count + update_count :]
+
+            packages: list[tuple[Path, set[int]]] = []
+
+            # Distinct DLC title IDs: BASE + 0x1000 + n, n in 1..2000.
+            dlc_offsets: list[int] = rng.sample(range(1, 2001), dlc_count)
+
+            for j, (dlc_module_id, offset) in enumerate(zip(dlc_module_ids, dlc_offsets, strict=True)):
+                dlc_id: int = BASE + 0x1000 + offset
+                dlc_path: Path = scenario / f'dlc{j}.nsp'
+                dlc_path.write_bytes(program_package(dlc_id, dlc_module_id))
+                packages.append((dlc_path, {dlc_id}))
+
+            expected: bytes | None = None
+
+            if has_base:
+                base_path: Path = scenario / 'base.nsp'
+                base_path.write_bytes(program_package(BASE, base_module_ids[0]))
+                packages.append((base_path, {BASE}))
+                expected = base_module_ids[0].ljust(MODULE_ID_SIZE, b'\0')
+
+            if update_count:
+                # Distinct readable versions make the newest update unambiguous.
+                versions: list[int] = rng.sample(range(1, 1_000_001), update_count)
+
+                for j, (update_module_id, version) in enumerate(zip(update_module_ids, versions, strict=True)):
+                    update_path: Path = scenario / f'update{j}.nsp'
+                    update_path.write_bytes(program_package(UPDATE, update_module_id, version=version))
+                    packages.append((update_path, {UPDATE}))
+
+                expected = update_module_ids[versions.index(max(versions))].ljust(MODULE_ID_SIZE, b'\0')
+
+            rng.shuffle(packages)
+
+            result: bytes | None = build_id_of(packages, BASE, HEADER_KEY, None)
+
+            expect(result).to_equal(expected)
+
+            for dlc_module_id in dlc_module_ids:
+                expect(result).not_.to_equal(dlc_module_id.ljust(MODULE_ID_SIZE, b'\0'))
+
+
+# ------------------------------------------------------------------------------
+# TITLEKEY (RIGHTS-ID) PATH
+
+TITLE_KEY: bytes = bytes(range(0x40, 0x50))
+TITLEKEK: bytes = bytes(range(0x90, 0xA0))
+MODULE_ID: bytes = bytes(range(1, 0x21))
+
+
+def _kek(generation: int) -> bytes | None:
+    """
+    A titlekek lookup holding only generation 0 and 2.
+    """
+    return {0: TITLEKEK, 2: bytes(16)}.get(generation)
+
+
+with describe('read_titlekeks'):
+
+    @test(name='finds titlekek_XX lines leniently and ignores other keys')
+    def finds_titlekeks(d: Annotated[Path, Depends(workdir)]) -> None:
+        keys: Path = write_titlekek_keys(d / 'prod.keys', 2, TITLEKEK)
+        keys.write_text(keys.read_text() + f'  TITLEKEK_0A = {TITLEKEK.hex().upper()}  \n')
+
+        expect(read_titlekeks(keys)).to_equal({2: TITLEKEK})
+
+
+with describe('title_key_of'):
+
+    @test(name='decrypts the titlekey for every supported signature type')
+    def decrypts_all_sig_types() -> None:
+        rid: bytes = rights_id_of(BASE)
+
+        for sig_type in (0x10003, 0x10004, 0x10005, 0x10006):
+            tik: bytes = ticket(rid, TITLE_KEY, TITLEKEK, sig_type=sig_type)
+
+            expect(title_key_of(tik, rid, _kek)).to_equal(TITLE_KEY)
+
+    @test(name='maps rights ID revisions 0 and 1 to generation 0, else value - 1')
+    def revision_to_generation() -> None:
+        for revision, kek in ((0, TITLEKEK), (1, TITLEKEK), (3, bytes(16))):
+            rid: bytes = rights_id_of(BASE, revision)
+            tik: bytes = ticket(rid, TITLE_KEY, kek)
+
+            expect(title_key_of(tik, rid, _kek)).to_equal(TITLE_KEY)
+
+    @test(name='returns None for personalized, unknown-type, truncated, and keyless')
+    def unsupported_is_none() -> None:
+        rid: bytes = rights_id_of(BASE)
+        good: bytes = ticket(rid, TITLE_KEY, TITLEKEK)
+
+        expect(title_key_of(ticket(rid, TITLE_KEY, TITLEKEK, key_type=1), rid, _kek)).to_equal(None)
+        expect(title_key_of(b'\x01\x00\x01\x7f' + good[4:], rid, _kek)).to_equal(None)
+        expect(title_key_of(good[:0x200], rid, _kek)).to_equal(None)
+        expect(title_key_of(b'', rid, _kek)).to_equal(None)
+        expect(title_key_of(good, rid, None)).to_equal(None)
+        expect(title_key_of(good, rights_id_of(BASE, 9), _kek)).to_equal(None)
+
+
+with describe('titlekey program NCA'):
+
+    @test(name='round-trips a ModuleId through the ticket titlekey path')
+    def titlekey_round_trip(d: Annotated[Path, Depends(workdir)]) -> None:
+        rid: bytes = rights_id_of(BASE)
+        pkg: Path = d / 'game.nsp'
+        pkg.write_bytes(titlekey_package(BASE, MODULE_ID, TITLE_KEY, ticket(rid, TITLE_KEY, TITLEKEK)))
+
+        expect(module_id_of(pkg, HEADER_KEY, None, _kek)).to_equal(MODULE_ID)
+
+    @test(name='returns None without a ticket, a titlekek, or a common ticket')
+    def titlekey_skips(d: Annotated[Path, Depends(workdir)]) -> None:
+        rid: bytes = rights_id_of(BASE)
+        cases: dict[str, bytes] = {
+            'none': titlekey_package(BASE, MODULE_ID, TITLE_KEY, None),
+            'personalized': titlekey_package(BASE, MODULE_ID, TITLE_KEY, ticket(rid, TITLE_KEY, TITLEKEK, key_type=1)),
+            'bad-sig': titlekey_package(
+                BASE, MODULE_ID, TITLE_KEY, b'\x01\x00\x01\x7f' + ticket(rid, TITLE_KEY, TITLEKEK)[4:]
+            ),
+        }
+
+        for label, data in cases.items():
+            pkg: Path = d / f'{label}.nsp'
+            pkg.write_bytes(data)
+
+            expect(module_id_of(pkg, HEADER_KEY, None, _kek)).to_equal(None)
+
+        good: Path = d / 'good.nsp'
+        good.write_bytes(titlekey_package(BASE, MODULE_ID, TITLE_KEY, ticket(rid, TITLE_KEY, TITLEKEK)))
+
+        expect(module_id_of(good, HEADER_KEY, None, None)).to_equal(None)
+        expect(module_id_of(good, HEADER_KEY, None, lambda _g: None)).to_equal(None)
+
+    @test(name='AES-CTR with a zero RightsId decrypts via the key area (counter check)')
+    def key_area_ctr_round_trip(d: Annotated[Path, Depends(workdir)]) -> None:
+        kak: bytes = bytes(range(0x10, 0x20))
+        pkg: Path = d / 'game.nsp'
+        pkg.write_bytes(
+            pfs0([('program.nca', program_nca(MODULE_ID, section_key=TITLE_KEY, key_area_key=kak, key_generation=2))])
+        )
+
+        expect(module_id_of(pkg, HEADER_KEY, lambda g: kak if g == 2 else None)).to_equal(MODULE_ID)
+        expect(module_id_of(pkg, HEADER_KEY, lambda g: None)).to_equal(None)

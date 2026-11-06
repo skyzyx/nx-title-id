@@ -42,7 +42,7 @@ jobs:
     steps:
       # @config-manager:start harden-runner
       - name: Harden Runner
-        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         # @config-manager:end harden-runner
         # @config-manager:start step-security-hosts
         with:
@@ -185,7 +185,7 @@ jobs:
 
       # @config-manager:start workflow-trufflehog-scan
       - name: Check secrets with TruffleHog OSS
-        uses: trufflesecurity/trufflehog@31ce31ee1abbcc7dc8eee5764c17121c3044c8b2 # v3.99.7
+        uses: trufflesecurity/trufflehog@ea68ca03c865c5f324e86e849ced20ed3cf9dbbb # v3.99.8
         with:
           path: ./
           head: HEAD

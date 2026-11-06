@@ -80,6 +80,7 @@
   "files.trimTrailingWhitespace": true,
   "git.alwaysSignOff": true,
   "git.autoStash": true,
+  "git.ignoreLimitWarning": true,
   "github.copilot.chat.codeGeneration.useInstructionFiles": true,
   "github.copilot.chat.copilotDebugCommand.enabled": false,
   "github.copilot.chat.editor.temporalContext.enabled": true,

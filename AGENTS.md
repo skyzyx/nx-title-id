@@ -4,26 +4,38 @@ Guidance for AI agents working in the `nx-title-id` repository. Read this before
 
 ## What this project is
 
-`nx-title-id` is a single-purpose command-line tool: given a folder of Nintendo Switch game packages (`.nsp`, `.nsz`, `.xci`, `.xcz`), it prints the base-game title ID for each distinct game it finds. A game's base, updates, and DLC are separate packages that users keep together, so the one useful fact is the base game they all belong to.
+`nx-title-id` is a single-purpose command-line tool: given a folder of Nintendo Switch game packages (`.nsp`, `.nsz`, `.xci`, `.xcz`), it prints the base-game title ID for each distinct game it finds, and with the opt-in `-b`/`--build-id` flag its Build ID too. A game's base, updates, and DLC are separate packages that users keep together, so the one useful fact is the base game they all belong to.
 
-The whole implementation is one module, `src/nx_title_id/__init__.py` (under 500 lines). `src/nx_title_id/__main__.py` is a three-line `python -m` shim. Everything else in the repo is tests, documentation, and tooling configuration.
+The whole implementation is one module, `src/nx_title_id/__init__.py` (1144 lines). `src/nx_title_id/__main__.py` is a three-line `python -m` shim. Everything else in the repo is tests, documentation, and tooling configuration.
 
 Resolution tries the cheapest, most trustworthy source first: a ticket name inside the package, then a `[title ID]` tag in the file name, then (only with `prod.keys`) the decrypted meta NCA headers. Each source yields a set, so a multi-title cartridge contributes every game it carries; `application_of()` then folds updates and DLC back to their base game.
 
+Build ID resolution (`-b`) is a separate, opt-in path that only runs after the title IDs are known:
+
+* `main()` requires `prod.keys` with a `header_key` up front (exit 1 otherwise). `key_area_key_application_XX` and `titlekek_XX` are read lazily per game; a missing one skips that game.
+
+* `build_id_of()` picks one package per base game: the newest update (greatest readable `update_version_of()`; any update beats the base; ties go to the least sorted path), else the base package. A DLC is never a source.
+
+* `module_id_of()` XTS-decrypts the 0xC00 NCA header region, finds the first program NCA (content type 0), decrypts its exefs section (`exefs_section()`), reads the `main` NSO, and returns the 32-byte ModuleId. A non-zero RightsId means a titlekey NCA: `ticket_of()` and `title_key_of()` recover the key from the package's own `<rights ID>.tik` with `titlekek_XX`. Otherwise the key comes from the key area.
+
+* `render_build_id()` prints the first 8 bytes of the ModuleId as 16 uppercase hex digits. Output is `<TitleID> <BuildID>`.
+
+* A game that cannot be resolved is skipped with `skipping game <TitleID>: …` on stderr.
+
 ## Technology stack
 
-| Concern          | Choice                                  | Notes                                                              |
-|------------------|-----------------------------------------|--------------------------------------------------------------------|
-| Language         | Python `>=3.14`                         | Declared in `pyproject.toml` `requires-python`                     |
-| Runtime dep      | `pycryptodome>=4.2,<5`                  | AES only, for the meta NCA fallback; imported lazily inside a func |
-| Dev deps         | `cryptography==50.0.2`, `tryke==0.0.30` | Reference AES-XTS for tests; the test runner                       |
-| Package manager  | `uv`                                    | Lockfile is `uv.lock`; run tools via `uv run`/`uvx`                |
-| Build backend    | `hatchling>=1.27,<2`                    | Version read dynamically from `__init__.py` `__version__`          |
-| Test runner      | Tryke                                   | Jest-style API; `uv run tryke test`                                |
-| Formatter/linter | Ruff                                    | Replaces Black, isort, flake8; never run those                     |
-| Type checker     | Pyrefly                                 | Not mypy or pyright; target is zero diagnostics                    |
-| Task runner      | Taskfile (go-task)                      | `Taskfile.dist.yml`; `make` is a shim to `task`                    |
-| Hook manager     | hk (with pkl config)                    | `hk.pkl`; installed via `task install:hooks`                       |
+| Concern          | Choice                                  | Notes                                                                                           |
+|------------------|-----------------------------------------|-------------------------------------------------------------------------------------------------|
+| Language         | Python `>=3.14`                         | Declared in `pyproject.toml` `requires-python`                                                  |
+| Runtime dep      | `pycryptodome>=4.2,<5`                  | AES-ECB (XTS, key area, titlekey) and AES-CTR (`-b` sections); imported lazily inside functions |
+| Dev deps         | `cryptography==50.0.2`, `tryke==0.0.30` | Reference AES-XTS for tests; the test runner                                                    |
+| Package manager  | `uv`                                    | Lockfile is `uv.lock`; run tools via `uv run`/`uvx`                                             |
+| Build backend    | `hatchling>=1.27,<2`                    | Version read dynamically from `__init__.py` `__version__`                                       |
+| Test runner      | Tryke                                   | Jest-style API; `uv run tryke test`                                                             |
+| Formatter/linter | Ruff                                    | Replaces Black, isort, flake8; never run those                                                  |
+| Type checker     | Pyrefly                                 | Not mypy or pyright; target is zero diagnostics                                                 |
+| Task runner      | Taskfile (go-task)                      | `Taskfile.dist.yml`; `make` is a shim to `task`                                                 |
+| Hook manager     | hk (with pkl config)                    | `hk.pkl`; installed via `task install:hooks`                                                    |
 
 ## Commands
 
@@ -65,7 +77,7 @@ These are enforced by hooks and are not optional. The authoritative, detailed ve
 
 * File section order: imports, constants, module vars, classes, private functions, public functions, with `# ---`-style section separators (max 80 chars wide, all-caps section name).
 
-* Imports are always global, except the one deliberate `from Crypto.Cipher import AES` inside `xts_decrypt_sector()`, which is commented as an intentional exception so ticket/tag-resolved packages never load pycryptodome.
+* Imports are always global, except the deliberate `from Crypto.Cipher import AES` inside three functions: `title_key_of()`, `xts_decrypt_sector()`, and `_ctr_decrypt_section()`. Each is commented as an intentional exception so a default run resolved by ticket or tag never loads pycryptodome.
 
 * Comment lines wrap at 80 characters. Ruff caps code lines at 120.
 
@@ -75,27 +87,27 @@ These are enforced by hooks and are not optional. The authoritative, detailed ve
 
 Tests live in `tests/` and run under Tryke. Full guidance is in `.kiro/steering/tryke-testing.md`. Key facts:
 
-* `tests/builders.py` holds synthetic package builders (`pfs0`, `hfs0`, `xci`, `ticket_name`, `nca_header`, `write_keys`, `reader`, `run_cli`) plus `HEADER_KEY` and the `HAVE_REAL_*`/`HAVE_FF_XCI` availability flags. Reuse these; do not invent new builders.
+* `tests/builders.py` holds synthetic package builders (`pfs0`, `hfs0`, `xci`, `ticket_name`, `nca_header`, `write_keys`, `reader`, `run_cli`) plus `HEADER_KEY` and the `HAVE_REAL_*`/`HAVE_FF_XCI` availability flags. The Build-ID builders are `nso`, `exefs`, `program_nca` (None encryption by default; AES-CTR with `section_key`, a titlekey when `rights_id` is non-zero or the key area with `key_area_key`), `meta_nca` (optional version), `rights_id_of`, `ticket`, `titlekey_package`, `write_titlekek_keys`, and `program_package`. `real_nsp()` and `real_nsp_build_id()` locate the real fixtures. Reuse these; do not invent new builders.
 
-* `test_containers.py` covers `partition`/`package_files`/`is_package`; `test_title.py` covers key parsing, AES-XTS, meta NCAs, resolution order, and `application_of`; `test_cli.py` runs the CLI end-to-end in a subprocess.
+* `test_containers.py` covers `partition`/`package_files`/`is_package`; `test_title.py` covers key parsing, AES-XTS, meta NCAs, resolution order, `application_of`, and the Build-ID functions (`decrypt_nca_header`, `exefs_section`, `module_id_of`, `update_version_of`, `build_id_of`, `read_titlekeks`, `title_key_of`); `test_cli.py` runs the CLI end-to-end in a subprocess, including `-b`. The suite currently has 121 tests.
 
-* Property-style tests use seeded `random.Random(0)` loops, not Hypothesis (no such dependency). Tryke discovery is static, so never generate tests in a `for` loop; use `@test.cases` with string-literal labels.
+* Property-style tests use seeded `random.Random(0)` loops, not Hypothesis (no such dependency). The `build-id` spec has five, tagged `# Feature: build-id, Property N`: ModuleId round-trip, first-8-bytes hex rendering, newest-update selection, DLC exclusion (all in `test_title.py`), and unchanged default output without `-b` (`test_cli.py`). Tryke discovery is static, so never generate tests in a `for` loop; use `@test.cases` with string-literal labels.
 
 * CLI tests run `python -m nx_title_id` in a subprocess with an isolated `HOME`, because Tryke workers use stdout for JSON-RPC and must not have it redirected in-process.
 
-* Tests gated on local-only assets (real NSPs at `tests/<title ID>.nsp`, `tests/ff.xci`, real `~/.switch/prod.keys`) skip cleanly via `@test.skip_if` when the assets are absent. These are gitignored, so they are missing in CI and fresh clones.
+* Tests gated on local-only assets (real NSPs at `tests/<TitleID>-<BuildID>.nsp`, found by glob; `tests/ff.xci`; real `~/.switch/prod.keys`) skip cleanly via `@test.skip_if` when the assets are absent. The `-b` real-fixture tests assert that the printed Build ID equals the 16 digits after the hyphen in the file name. The fixtures are gitignored, so they are missing in CI and fresh clones. Never print or assert on key values.
 
-* Exit codes are part of the contract: `0` one game, `1` setup/input error, `2` bad CLI args, `3` more than one game.
+* Exit codes are part of the contract: `0` one game, `1` setup/input error, `2` bad CLI args, `3` more than one game. Under `-b`, `1` also covers no `prod.keys`, no `header_key`, or no game with a readable Build ID, and `0`/`3` are decided on the games actually printed, so a skipped game never turns one line into exit 3.
 
 ## Repository layout
 
 | Path                          | What it is                                                       |
 |-------------------------------|------------------------------------------------------------------|
 | `src/nx_title_id/`            | The implementation (`__init__.py`) and the `python -m` shim      |
-| `tests/`                      | Tryke tests and `builders.py`                                    |
+| `tests/`                      | Tryke tests and `builders.py` (real fixtures are gitignored)     |
 | `docs/quickstart.md`          | Quick flow summary of the tool                                   |
 | `docs/comprehensive.md`       | Deep architecture audit                                          |
-| `README.md`                   | End-user usage, resolution order, exit status                    |
+| `README.md`                   | End-user usage, `-b` Build ID, resolution order, exit status     |
 | `CHANGELOG.md`                | Keep a Changelog format; current work sits under `## Unreleased` |
 | `pyproject.toml`              | Project metadata, deps, console script, Tryke config             |
 | `Taskfile.dist.yml`, `tools/` | Task definitions (lint, build, test, clean, docs)                |
@@ -157,7 +169,7 @@ Git hooks (separate from Kiro) are managed by `hk` and run on `pre-commit` (fix 
 
 ### Specs (`.kiro/specs/`)
 
-Feature and bugfix work is organized as specs. `audit-robustness-fixes/` holds the requirements, design, and tasks for the robustness hardening already shipped (set-returning resolution, per-package skip-on-error, warn-once keys, header sanity limits, exit code 3). Consult a spec's `design.md` before touching code it governs.
+Feature and bugfix work is organized as specs. `audit-robustness-fixes/` holds the requirements, design, and tasks for the robustness hardening already shipped (set-returning resolution, per-package skip-on-error, warn-once keys, header sanity limits, exit code 3). `build-id/` holds the same for the `-b`/`--build-id` flag (the exefs and titlekey flows, the newest-update rule, first-8-bytes rendering, the synthetic builders, and the five properties). Where the spec text and the code differ (for example task 3.3 puts a section at `HEADER_REGION + StartOffset * 0x200`), the code is right: FsEntry offsets are counted from the NCA start. Consult a spec's `design.md` before touching code it governs.
 
 ## Working effectively here
 

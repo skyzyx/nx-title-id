@@ -85,6 +85,6 @@
   destination = '.kiro/steering/commit-rules.md'
 
 [[files]]
-  stub = 'configs/stubs/.kiro/steering/fd-instead-of-find.md'
-  source = 'configs/templates/.kiro/steering/fd-instead-of-find.md'
+  stub        = 'configs/stubs/.kiro/steering/fd-instead-of-find.md'
+  source      = 'configs/templates/.kiro/steering/fd-instead-of-find.md'
   destination = '.kiro/steering/fd-instead-of-find.md'

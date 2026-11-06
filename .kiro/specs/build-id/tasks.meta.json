@@ -1,0 +1,524 @@
+{
+  "executionHistory": {
+    "1. Add Build-ID constants and fix the fixture builder": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899754296
+      }
+    ],
+    "1.1 Add new constants to `src/nx_title_id/__init__.py`": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899642737
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899651781
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899752999
+      }
+    ],
+    "1.2 Fix `HAVE_REAL_NSPS` and expose each fixture's Build ID in `tests/builders.py`": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899642802
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899652494
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899754229
+      }
+    ],
+    "10. Gated real-fixture integration tests": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793981918184
+      }
+    ],
+    "10.1 Write the real-crypto fixture tests": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643981
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980844499
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793981918106
+      }
+    ],
+    "11. Final verification and docs": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793982375584
+      }
+    ],
+    "11.1 Run the full verification gate and update docs": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899644029
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793982283730
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793982375516
+      }
+    ],
+    "12. Refresh project documentation": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "a5cf4421-ccc9-4c24-ad3f-62f9d846ce5c",
+        "timestamp": 1793984034152
+      }
+    ],
+    "12.1 Update comprehensive.md, quickstart.md, AGENTS.md, and README.md for the Build-ID feature": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "a5cf4421-ccc9-4c24-ad3f-62f9d846ce5c",
+        "timestamp": 1793983510178
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "a5cf4421-ccc9-4c24-ad3f-62f9d846ce5c",
+        "timestamp": 1793984034095
+      }
+    ],
+    "2. Add synthetic program-NCA builders to `tests/builders.py`": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899944789
+      }
+    ],
+    "2.1 Add the NSO blob factory and exefs PFS0 builder": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899642865
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899762750
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899825673
+      }
+    ],
+    "2.2 Add the None-encryption program-NCA builder and package assembler": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899642921
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899829903
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899944725
+      }
+    ],
+    "3. Implement NCA header decryption and the synthetic exefs section reader": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900157585
+      }
+    ],
+    "3.1 Implement `decrypt_nca_header` in `src/nx_title_id/__init__.py`": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899642978
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899830768
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899943839
+      }
+    ],
+    "3.2 Write unit tests for `decrypt_nca_header`": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643030
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899949340
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900026051
+      }
+    ],
+    "3.3 Implement `exefs_section` with the None path only": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643080
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899950152
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900027024
+      }
+    ],
+    "3.4 Write unit tests for `exefs_section` (None path)": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643130
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900030762
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900157522
+      }
+    ],
+    "4. Implement `module_id_of` and the ModuleId extraction chain": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900326919
+      }
+    ],
+    "4.1 Implement `module_id_of`": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643187
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900031695
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900158086
+      }
+    ],
+    "4.2 Write property test for ModuleId round-trip": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643239
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900162357
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900269973
+      }
+    ],
+    "4.3 Write property test for hex rendering": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643294
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900163656
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900326857
+      }
+    ],
+    "5. Implement update-version reading and the per-base-game resolver": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980496316
+      }
+    ],
+    "5.1 Implement `update_version_of`": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643346
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900164141
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900270129
+      }
+    ],
+    "5.2 Implement `build_id_of`": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643397
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900330806
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900397974
+      }
+    ],
+    "5.3 Write property test for newest-update selection": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643447
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900534685
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980394871
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980453252
+      }
+    ],
+    "5.4 Write property test for DLC exclusion": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643511
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980458084
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980496258
+      }
+    ],
+    "6. Implement the real-crypto exefs path (AES-CTR + key area)": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900530248
+      }
+    ],
+    "6.1 Add the AES-CTR branch to `exefs_section`": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643562
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900402045
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900530191
+      }
+    ],
+    "7. Wire the CLI flag, keys precondition, and output into `main()`": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980582409
+      }
+    ],
+    "7.1 Add the `-b`/`--build-id` flag and the up-front keys precondition": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643614
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793900535627
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980390402
+      }
+    ],
+    "7.2 Add the lazy `key_area_key` accessor and resolve/print Build IDs": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643667
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980502879
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980582348
+      }
+    ],
+    "8. Checkpoint - Ensure all tests pass": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643714
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793982132804
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793982280561
+      }
+    ],
+    "9. CLI example, edge, and preservation tests": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980839869
+      }
+    ],
+    "9.1 Write the flag-acceptance and known-value CLI tests": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643763
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980592329
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980642553
+      }
+    ],
+    "9.2 Write the keys-precondition and skip CLI tests": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643818
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980645054
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980692945
+      }
+    ],
+    "9.3 Write the exit-code-contract CLI tests": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643867
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980695429
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980748868
+      }
+    ],
+    "9.4 Write the default-output property and unchanged-behavior tests": [
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "e4be4e80-3fc0-4fe3-a822-e9f03eb765b4",
+        "timestamp": 1793899643925
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980751507
+      },
+      {
+        "chatSessionId": "sess_b7edec48-f8a8-4c0c-bf95-9ecb53e2b0ea",
+        "executionId": "588afa3d-0ebe-4f99-b1dd-86ada47d90af",
+        "timestamp": 1793980839802
+      }
+    ]
+  },
+  "pbtResults": {}
+}

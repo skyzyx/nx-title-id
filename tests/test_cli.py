@@ -14,7 +14,7 @@ from typing import Annotated
 
 from tryke import Depends, describe, expect, fixture, test
 
-from nx_title_id import __version__, read_header_key
+from nx_title_id import __version__, application_of, read_header_key, read_key_area_keys
 from tests.builders import (
     BASE,
     DLC_1,
@@ -34,10 +34,16 @@ from tests.builders import (
     Run,
     nca_header,
     pfs0,
+    program_package,
     real_nsp,
+    real_nsp_build_id,
+    rights_id_of,
     run_cli,
+    ticket,
     ticket_name,
+    titlekey_package,
     write_keys,
+    write_titlekek_keys,
     xci,
 )
 
@@ -305,6 +311,406 @@ with describe('folder results'):
 
         expect(result.code).to_equal(1)
         expect(result.stderr).to_contain('not a folder')
+
+
+with describe('--build-id'):
+
+    @test.cases(
+        test.case('-b', flag='-b'),
+        test.case('--build-id', flag='--build-id'),
+    )
+    def prints_title_id_and_build_id(flag: str, h: Annotated[Path, Depends(home)]) -> None:
+        # The synthetic package has only a meta NCA and a program NCA, so the
+        # title ID comes from the meta NCA fallback via the -k keys file. The
+        # ModuleId is a full 0x20 bytes with hex letters, so uppercase matters;
+        # only its first 8 bytes are printed as the Build ID.
+        # Validates: Requirements 1.1, 1.3, 1.4, 6.2
+        module_id: bytes = bytes(range(0xA0, 0xC0))
+        games: Path = _games(h)
+        (games / 'Game.nsp').write_bytes(program_package(BASE, module_id))
+        keys: Path = write_keys(h / 'my.keys')
+        result: Run = run_cli([str(games), flag, '-k', str(keys)], h)
+
+        expected: str = module_id[:8].hex().upper()
+        fields: list[str] = result.stdout.rstrip('\n').split(' ')
+
+        # argparse rejects with exit 2, so anything else means it was accepted.
+        expect(result.code).not_.to_equal(2)
+        expect(result.code).to_equal(0)
+        expect(result.stdout).to_equal(f'{BASE:016X} {expected}\n')
+        expect(len(fields)).to_equal(2)
+        expect(len(fields[1])).to_equal(16)
+        expect(fields[1]).to_equal(fields[1].upper())
+        expect(result.stdout).not_.to_contain(HEADER_KEY.hex())
+        expect(result.stderr).not_.to_contain(HEADER_KEY.hex())
+
+    @test(name='bytes after the first 8 of the ModuleId do not change the printed Build ID')
+    def build_id_ignores_bytes_after_the_first_8(h: Annotated[Path, Depends(home)]) -> None:
+        # The Build ID tools show is the ModuleId's first 8 bytes, so two
+        # ModuleIds that differ only afterwards must print the same value.
+        # Validates: Requirements 1.3, 2.2
+        head: bytes = bytes(range(0xB0, 0xB8))
+        keys: Path = write_keys(h / 'my.keys')
+        printed: list[str] = []
+
+        for i, tail in enumerate([bytes(24), bytes(range(1, 25))]):
+            games: Path = h / f'games{i}'
+            games.mkdir()
+            (games / 'Game.nsp').write_bytes(program_package(BASE, head + tail))
+            printed.append(run_cli([str(games), '-b', '-k', str(keys)], h).stdout)
+
+        expect(printed[0]).to_equal(f'{BASE:016X} {head.hex().upper()}\n')
+        expect(printed[1]).to_equal(printed[0])
+
+
+with describe('--build-id keys and skips'):
+
+    @test(name='-b with no keys source is a one-line setup error before any output')
+    def build_id_without_keys(h: Annotated[Path, Depends(home)]) -> None:
+        # A ticket-resolved package would print fine without -b, so an empty
+        # stdout proves the precondition fires before any package work.
+        # Validates: Requirements 2.3, 4.1, 6.3
+        games: Path = _games(h)
+        (games / 'Game.nsp').write_bytes(pfs0([(ticket_name(BASE), b'')]))
+        result: Run = run_cli([str(games), '-b'], h)
+
+        expect(result.code).to_equal(1)
+        expect(result.stdout).to_equal('')
+        expect(result.stderr).to_contain('needs prod.keys')
+        expect(len(result.stderr.strip().splitlines())).to_equal(1)
+        expect(result.stderr).not_.to_contain('Traceback')
+
+    @test(name='-b with a keys file lacking header_key exits 1 up front')
+    def build_id_keys_without_header_key(h: Annotated[Path, Depends(home)]) -> None:
+        # Validates: Requirements 4.1
+        games: Path = _games(h)
+        (games / 'Game.nsp').write_bytes(pfs0([(ticket_name(BASE), b'')]))
+        keys: Path = h / 'bad.keys'
+        keys.write_text('titlekek_00 = 00\n')
+        result: Run = run_cli([str(games), '-b', '-k', str(keys)], h)
+
+        expect(result.code).to_equal(1)
+        expect(result.stdout).to_equal('')
+        expect(result.stderr).to_contain('header_key')
+        expect(result.stderr).not_.to_contain('Traceback')
+
+    @test(name='a ticket-only game is skipped while a program-NCA game still prints')
+    def build_id_skips_ticket_only_game(h: Annotated[Path, Depends(home)]) -> None:
+        # Validates: Requirements 4.2, 6.3
+        module_id: bytes = bytes(range(0x10, 0x30))
+        games: Path = _games(h)
+        (games / 'A.nsp').write_bytes(pfs0([(ticket_name(OTHER_BASE), b'')]))
+        (games / 'B.nsp').write_bytes(program_package(BASE, module_id))
+        keys: Path = write_keys(h / 'my.keys')
+        result: Run = run_cli([str(games), '-b', '-k', str(keys)], h)
+
+        expect(result.code).to_equal(0)
+        expect(result.stdout).to_equal(f'{BASE:016X} {module_id[:8].hex().upper()}\n')
+        expect(result.stderr).to_contain(f'skipping game {OTHER_BASE:016X}')
+        expect(result.stderr).not_.to_contain('Traceback')
+        expect(result.stdout).not_.to_contain(HEADER_KEY.hex())
+        expect(result.stderr).not_.to_contain(HEADER_KEY.hex())
+
+    @test(name='a package with no program NCA is skipped while others print')
+    def build_id_skips_package_without_program_nca(h: Annotated[Path, Depends(home)]) -> None:
+        # C resolves its title ID through the meta NCA fallback but carries no
+        # program NCA, so it has no main NSO to read.
+        # Validates: Requirements 4.3
+        module_id: bytes = bytes(range(0x40, 0x60))
+        games: Path = _games(h)
+        (games / 'B.nsp').write_bytes(program_package(BASE, module_id))
+        (games / 'C.nsp').write_bytes(pfs0([('meta.cnmt.nca', nca_header(OTHER_BASE, META))]))
+        keys: Path = write_keys(h / 'my.keys')
+        result: Run = run_cli([str(games), '-b', '-k', str(keys)], h)
+
+        expect(result.code).to_equal(0)
+        expect(result.stdout).to_equal(f'{BASE:016X} {module_id[:8].hex().upper()}\n')
+        expect(result.stderr).to_contain(f'skipping game {OTHER_BASE:016X}')
+        expect(result.stderr).not_.to_contain('Traceback')
+        expect(result.stdout).not_.to_contain(HEADER_KEY.hex())
+        expect(result.stderr).not_.to_contain(HEADER_KEY.hex())
+
+
+with describe('--build-id exit codes'):
+
+    @test(name='one game under -b exits 0 and prints one line')
+    def build_id_exit_0_one_game(h: Annotated[Path, Depends(home)]) -> None:
+        # Validates: Requirements 4.4
+        module_id: bytes = bytes(range(0x10, 0x30))
+        games: Path = _games(h)
+        (games / 'Game.nsp').write_bytes(program_package(BASE, module_id))
+        keys: Path = write_keys(h / 'my.keys')
+        result: Run = run_cli([str(games), '-b', '-k', str(keys)], h)
+
+        expect(result.code).to_equal(0)
+        expect(result.stdout).to_equal(f'{BASE:016X} {module_id[:8].hex().upper()}\n')
+        expect(result.stderr).not_.to_contain('more than one game')
+        expect(result.stdout).not_.to_contain(HEADER_KEY.hex())
+        expect(result.stderr).not_.to_contain(HEADER_KEY.hex())
+
+    @test(name='several games under -b print each sorted by Title ID and exit 3')
+    def build_id_exit_3_several_games(h: Annotated[Path, Depends(home)]) -> None:
+        # Validates: Requirements 4.4
+        module_a: bytes = bytes(range(0x10, 0x30))
+        module_b: bytes = bytes(range(0x50, 0x70))
+        games: Path = _games(h)
+        # written in reverse order so sorted output can't follow file order
+        (games / 'A.nsp').write_bytes(program_package(OTHER_BASE, module_b))
+        (games / 'B.nsp').write_bytes(program_package(BASE, module_a))
+        keys: Path = write_keys(h / 'my.keys')
+        result: Run = run_cli([str(games), '-b', '-k', str(keys)], h)
+
+        expect(result.code).to_equal(3)
+        expect(result.stdout).to_equal(
+            ''.join(
+                f'{tid:016X} {mid[:8].hex().upper()}\n'
+                for tid, mid in sorted([(BASE, module_a), (OTHER_BASE, module_b)])
+            )
+        )
+        expect(result.stderr).to_contain('more than one game')
+        expect(result.stderr).not_.to_contain('Traceback')
+        expect(result.stdout).not_.to_contain(HEADER_KEY.hex())
+        expect(result.stderr).not_.to_contain(HEADER_KEY.hex())
+
+    @test(name='all games skipped under -b exits 1 with no output')
+    def build_id_exit_1_all_skipped(h: Annotated[Path, Depends(home)]) -> None:
+        # Validates: Requirements 4.5
+        games: Path = _games(h)
+        (games / 'A.nsp').write_bytes(pfs0([(ticket_name(BASE), b'')]))
+        (games / 'B.nsp').write_bytes(pfs0([('meta.cnmt.nca', nca_header(OTHER_BASE, META))]))
+        keys: Path = write_keys(h / 'my.keys')
+        result: Run = run_cli([str(games), '-b', '-k', str(keys)], h)
+
+        expect(result.code).to_equal(1)
+        expect(result.stdout).to_equal('')
+        expect(result.stderr).to_contain('no game with a readable Build ID')
+        expect(result.stderr).not_.to_contain('Traceback')
+        expect(result.stderr).not_.to_contain(HEADER_KEY.hex())
+
+    @test(name='skips do not turn two printable games into anything but exit 3')
+    def build_id_exit_3_ignores_skipped(h: Annotated[Path, Depends(home)]) -> None:
+        # Validates: Requirements 4.4
+        module_a: bytes = bytes(range(0x10, 0x30))
+        module_b: bytes = bytes(range(0x50, 0x70))
+        games: Path = _games(h)
+        (games / 'A.nsp').write_bytes(program_package(BASE, module_a))
+        (games / 'B.nsp').write_bytes(program_package(OTHER_BASE, module_b))
+        # a third, distinct game (DLC_1 would fold into BASE) with only a
+        # ticket, so it has no program NCA and is skipped
+        third: int = OTHER_BASE + 0x10000
+        (games / 'C.nsp').write_bytes(pfs0([(ticket_name(third), b'')]))
+        keys: Path = write_keys(h / 'my.keys')
+        result: Run = run_cli([str(games), '-b', '-k', str(keys)], h)
+
+        expect(result.code).to_equal(3)
+        expect(len(result.stdout.splitlines())).to_equal(2)
+        expect(result.stderr).to_contain('more than one game')
+        expect(result.stderr).to_contain(f'skipping game {third:016X}')
+        expect(result.stderr).not_.to_contain('Traceback')
+
+    @test(name='an unknown flag is an argparse error with exit 2')
+    def bad_flag_exits_2(h: Annotated[Path, Depends(home)]) -> None:
+        # Validates: Requirements 4.4
+        result: Run = run_cli(['--no-such-flag'], h)
+
+        expect(result.code).to_equal(2)
+        expect(result.stdout).to_equal('')
+        expect(result.stderr).to_contain('usage')
+
+    @test(name='a missing folder argument is an argparse error with exit 2')
+    def missing_folder_exits_2(h: Annotated[Path, Depends(home)]) -> None:
+        result: Run = run_cli([], h)
+
+        expect(result.code).to_equal(2)
+        expect(result.stdout).to_equal('')
+        expect(result.stderr).to_contain('usage')
+
+
+with describe('--build-id titlekey package'):
+
+    @test(name='a synthetic titlekey package prints its Build ID; no ticket is a skip')
+    def titlekey_cli(h: Annotated[Path, Depends(home)]) -> None:
+        title_key: bytes = bytes(range(0x40, 0x50))
+        titlekek: bytes = bytes(range(0x90, 0xA0))
+        module_id: bytes = bytes(range(1, 0x21))
+        rid: bytes = rights_id_of(BASE)
+        games: Path = _games(h)
+        (games / 'Game.nsp').write_bytes(titlekey_package(BASE, module_id, title_key, ticket(rid, title_key, titlekek)))
+        keys: Path = write_titlekek_keys(h / 'my.keys', 0, titlekek)
+        result: Run = run_cli([str(games), '-b', '-k', str(keys)], h)
+
+        expect(result.code).to_equal(0)
+        expect(result.stdout).to_equal(f'{BASE:016X} {module_id[:8].hex().upper()}\n')
+
+        for text in (result.stdout, result.stderr):
+            expect(text).not_.to_contain(title_key.hex())
+            expect(text).not_.to_contain(titlekek.hex())
+
+        # the same package without the titlekek in the keys file is a skip
+        plain: Path = write_keys(h / 'plain.keys')
+        skipped: Run = run_cli([str(games), '-b', '-k', str(plain)], h)
+
+        expect(skipped.code).to_equal(1)
+        expect(skipped.stdout).to_equal('')
+        expect(skipped.stderr).to_contain(f'skipping game {BASE:016X}')
+        expect(skipped.stderr).not_.to_contain('Traceback')
+
+
+with describe('--build-id absent (default output)'):
+
+    @test(name='a default run prints only Title IDs, one per line, and no Build ID')
+    def default_run_emits_no_build_id(h: Annotated[Path, Depends(home)]) -> None:
+        # Validates: Requirements 1.2, 5.1, 5.3
+        module_id: bytes = bytes(range(0xA0, 0xC0))
+        games: Path = _games(h)
+        (games / 'Game.nsp').write_bytes(program_package(BASE, module_id))
+        keys: Path = write_keys(h / 'my.keys')
+        result: Run = run_cli([str(games), '-k', str(keys)], h)
+
+        expect(result.code).to_equal(0)
+        expect(result.stdout).to_equal(_ids(BASE))
+        expect(result.stdout).not_.to_contain(' ')
+        expect(result.stdout).not_.to_contain(module_id[:8].hex().upper())
+        expect(result.stderr).to_equal('')
+
+    @test(name='default output is unchanged without -b and does no program NCA work (seeded)')
+    def default_output_unchanged_without_flag(h: Annotated[Path, Depends(home)]) -> None:
+        # Feature: build-id, Property 5: Default output is unchanged when the flag is absent
+        # Validates: Requirements 1.2, 5.1, 5.2, 5.3, 6.4
+        #
+        # The expected output is computed from the generated contents alone:
+        # sorted unique application_of() IDs, exit 0/3/1 for one/several/none.
+        # A sentinel ModuleId in every program package must never surface, and
+        # a corrupt program NCA must not produce a skip message, because a
+        # default run never opens program NCAs.
+        rng = random.Random(0)
+        keys: Path = write_keys(h / 'my.keys')
+        sentinel: bytes = bytes([0xDE, 0xAD, 0xBE, 0xEF] * 8)
+        titles: list[int] = [BASE, UPDATE, DLC_1, OTHER_BASE, OTHER_BASE + 0x800, OTHER_BASE + 0x10000]
+        id_line = re.compile(r'^[0-9A-F]{16}$')
+
+        for n in range(100):
+            folder: Path = h / f'folder{n}'
+            folder.mkdir()
+            expected: set[int] = set()
+
+            for i, kind in enumerate(rng.choices(['ticket', 'tag', 'meta', 'program', 'corrupt'], k=rng.randint(0, 4))):
+                tid: int = rng.choice(titles)
+                expected.add(application_of(tid))
+
+                if kind == 'ticket':
+                    (folder / f'p{i}.nsp').write_bytes(pfs0([(ticket_name(tid), b'')]))
+
+                elif kind == 'tag':
+                    (folder / f'p{i} [{tid:016X}].nsp').write_bytes(pfs0([('a.nca', b'')]))
+
+                elif kind == 'meta':
+                    (folder / f'p{i}.nsp').write_bytes(pfs0([('meta.cnmt.nca', nca_header(tid, META))]))
+
+                elif kind == 'program':
+                    (folder / f'p{i}.nsp').write_bytes(program_package(tid, sentinel))
+
+                else:  # an unreadable program NCA beside a valid meta NCA
+                    junk: bytes = bytes(rng.randrange(256) for _ in range(0xC00 + 0x200))
+                    (folder / f'p{i}.nsp').write_bytes(
+                        pfs0([('program.nca', junk), ('meta.cnmt.nca', nca_header(tid, META))])
+                    )
+
+            result: Run = run_cli([str(folder), '-k', str(keys)], h)
+            want: list[int] = sorted(expected)
+            want_code: int = 1 if not want else (0 if len(want) == 1 else 3)
+
+            expect(result.code).to_equal(want_code)
+            expect(result.stdout).to_equal(_ids(*want))
+
+            for line in result.stdout.splitlines():
+                expect(id_line.match(line)).not_.to_be_none()
+
+            for text in (result.stdout, result.stderr):
+                expect(text).not_.to_contain(sentinel.hex())
+                expect(text).not_.to_contain(sentinel.hex().upper())
+                expect(text).not_.to_contain(HEADER_KEY.hex())
+                expect(text).not_.to_contain('Traceback')
+
+            if want:
+                expect(result.stderr).not_.to_contain('Build ID')
+                expect(result.stderr).not_.to_contain('skipping')
+
+
+# ------------------------------------------------------------------------------
+# --BUILD-ID REAL FIXTURES, gated on the fixtures and real keys
+
+# Every real fixture's program NCA carries a non-zero RightsId, so its exefs is
+# keyed from the NSP's ticket titlekey (titlekek_XX), not the key area.
+_NO_REAL_BUILD_IDS: str = f'{NO_REAL_NSPS} or no ~/.switch/prod.keys'
+_REAL_ONE_LINE: re.Pattern[str] = re.compile(r'^([0-9A-F]{16}) ([0-9A-F]{16})\n$')
+
+
+def _secret_hexes() -> list[str]:
+    """
+    Every real key value as hex in both cases, so a test can assert none of them
+    leaks into the output.
+    """
+    keys: list[bytes] = [read_header_key(REAL_KEYS), *read_key_area_keys(REAL_KEYS).values()]
+
+    return [form for key in keys for form in (key.hex(), key.hex().upper())]
+
+
+with describe('--build-id real fixtures'):
+
+    @test.skip_if(not (HAVE_REAL_NSPS and HAVE_REAL_KEYS), reason=_NO_REAL_BUILD_IDS)
+    @test.cases(
+        test.case('01004B800AF5A000', tid=0x01004B800AF5A000),
+        test.case('01009C100390E000', tid=0x01009C100390E000),
+        test.case('0100D9B00B666000', tid=0x0100D9B00B666000),
+    )
+    def real_build_id_matches_filename(tid: int, h: Annotated[Path, Depends(home)]) -> None:
+        # Validates: Requirements 6.5, 6.6
+        # The filename's 16 hex digits are the first 8 bytes of the 32-byte
+        # ModuleId (what nxdumptool/Atmosphere call the Build ID), which is
+        # exactly what the tool prints.
+        games: Path = _games(h)
+        (games / 'Game.nsp').symlink_to(real_nsp(tid))
+
+        result: Run = run_cli([str(games), '-b', '-k', str(REAL_KEYS)], h)
+        m: re.Match[str] | None = _REAL_ONE_LINE.match(result.stdout)
+        want: str | None = real_nsp_build_id(tid)
+
+        expect(result.code).to_equal(0)
+        expect(m is not None and want is not None).to_be_truthy()
+
+        if m is not None and want is not None:
+            expect(m.group(1)).to_equal(f'{tid:016X}')
+            expect(m.group(2)).to_equal(want)
+
+        for secret in _secret_hexes():
+            expect(result.stdout).not_.to_contain(secret)
+            expect(result.stderr).not_.to_contain(secret)
+
+    @test.skip_if(not (HAVE_REAL_NSPS and HAVE_REAL_KEYS), reason=_NO_REAL_BUILD_IDS)
+    # skip_if takes no name= and Tryke reads a docstring's literal first line
+    # (blank in this project's style), so the function name is the label
+    def real_build_ids_for_every_fixture_sorted(h: Annotated[Path, Depends(home)]) -> None:
+        # Validates: Requirements 4.4, 6.5
+        games: Path = _games(h)
+
+        # reversed names, so the sorted output can't just follow file order
+        for name, tid in zip(['C', 'B', 'A'], REAL_TITLE_IDS, strict=True):
+            (games / f'{name}.nsp').symlink_to(real_nsp(tid))
+
+        result: Run = run_cli([str(games), '-b', '-k', str(REAL_KEYS)], h)
+        lines: list[str] = result.stdout.splitlines()
+
+        expect(result.code).to_equal(3)
+        expect(len(lines)).to_equal(len(REAL_TITLE_IDS))
+
+        # sorted by Title ID; each Build ID equals the filename's digits
+        for line, tid in zip(lines, sorted(REAL_TITLE_IDS), strict=True):
+            title, _, build = line.partition(' ')
+
+            expect(title).to_equal(f'{tid:016X}')
+            expect(build).to_equal(real_nsp_build_id(tid))
+        expect(result.stderr).to_contain('more than one game')
 
 
 @test(name='--version prints the package version')

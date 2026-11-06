@@ -17,8 +17,8 @@
   destination = '.kiro/steering/python-code-conventions.md'
 
 [[files]]
-  stub = 'configs/stubs/.kiro/steering/tryke-testing.md'
-  source = 'configs/templates/.kiro/steering/tryke-testing.md'
+  stub        = 'configs/stubs/.kiro/steering/tryke-testing.md'
+  source      = 'configs/templates/.kiro/steering/tryke-testing.md'
   destination = '.kiro/steering/tryke-testing.md'
 
   #-------------------------------------------------------------------------------
