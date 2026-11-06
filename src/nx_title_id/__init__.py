@@ -31,7 +31,7 @@ from collections.abc import Callable, Sequence
 from io import BufferedReader, BytesIO
 from pathlib import Path
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 EXTENSIONS = ('.nsp', '.nsz', '.xci', '.xcz')
 DEFAULT_KEYS: Path = Path.home() / '.switch' / 'prod.keys'
