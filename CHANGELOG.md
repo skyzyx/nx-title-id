@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 
 * [`dcf9726`](https://github.com/skyzyx/nx-title-id/commit/dcf9726c04fe13d8e49f99c9980b274ffe90c4a8): Fetch full git history in update-on-push checkout. ([@skyzyx](https://github.com/skyzyx))
 
+### <!-- ZZZ -->:gear: Miscellaneous Tasks
+
+* [`a68f6c4`](https://github.com/skyzyx/nx-title-id/commit/a68f6c4dd017051f949c406133d09bf3c0bec345): Bump `version` to 1.1.0. ([@skyzyx](https://github.com/skyzyx))
+
 ## 1.1.0 — 2026-11-06
 
 [Compare: v1.0.0 → v1.1.0](https://github.com/skyzyx/nx-title-id/compare/v1.0.0...v1.1.0)
