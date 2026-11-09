@@ -1,0 +1,134 @@
+---
+log:
+  quiet: false
+  level: "info"
+  file: ""
+
+config: ""
+
+output:
+  - "table"
+  - "cyclonedx-json=./sbom.cyclone-dx.json"
+  - "github-json=./sbom.github.json"
+  - "spdx-json=./sbom.spdx.json"
+
+format:
+  pretty: true
+
+  json:
+    legacy: false
+    pretty: true
+
+  spdx-json:
+    pretty: true
+
+  cyclonedx-json:
+    pretty: true
+
+  github-json:
+    pretty: true
+
+check-for-app-update: false
+default-catalogers: []
+select-catalogers: [python]
+
+package:
+  search-unindexed-archives: false
+  search-indexed-archives: true
+  exclude-binary-overlap-by-ownership: true
+  nested-archive-max-depth: 0
+  nested-archive-max-memory-bytes: 2147483648
+  nested-archive-max-disk-bytes: 107374182400
+
+license:
+  content: "none"
+  coverage: 75
+
+file:
+  metadata:
+    selection: "owned-by-package"
+    digests:
+      - "sha1"
+      - "sha256"
+
+  content:
+    skip-files-above-size: 256000
+    globs: []
+
+  executable:
+    globs: []
+
+scope: "squashed"
+parallelism: -1
+
+relationships:
+  package-file-ownership: true
+  package-file-ownership-overlap: true
+
+compliance:
+  missing-name: "drop"
+  missing-version: "stub"
+
+enrich: [all]
+
+golang:
+  search-local-mod-cache-licenses:
+  local-mod-cache-dir: "~/gocode/pkg/mod"
+  search-local-vendor-licenses:
+  local-vendor-dir: ""
+  search-remote-licenses:
+  proxy: "https://proxy.golang.org,direct"
+  no-proxy: ""
+  main-module-version:
+    from-ld-flags: true
+    from-contents: false
+    from-build-settings: true
+  use-packages-lib:
+  capture-symbols: "none"
+  capture-symbols-modules: []
+
+javascript:
+  search-remote-licenses:
+  npm-base-url: "https://registry.npmjs.org"
+  include-dev-dependencies:
+
+linux-kernel:
+  catalog-modules: true
+
+python:
+  search-remote-licenses:
+  pypi-base-url: "https://pypi.org"
+  guess-unpinned-requirements: true
+
+registry:
+  insecure-skip-tls-verify: false
+  insecure-use-http: false
+
+  # Authentication credentials for specific registries. Each entry describes authentication for a specific authority:
+  # -	authority: the registry authority URL the URL to the registry (e.g. "docker.io", "localhost:5000", etc.) (env: SYFT_REGISTRY_AUTH_AUTHORITY)
+  # 	username: a username if using basic credentials (env: SYFT_REGISTRY_AUTH_USERNAME)
+  # 	password: a corresponding password (env: SYFT_REGISTRY_AUTH_PASSWORD)
+  # 	token: a token if using token-based authentication, mutually exclusive with username/password (env: SYFT_REGISTRY_AUTH_TOKEN)
+  # 	tls-cert: filepath to the client certificate used for TLS authentication to the registry (env: SYFT_REGISTRY_AUTH_TLS_CERT)
+  # 	tls-key: filepath to the client key used for TLS authentication to the registry (env: SYFT_REGISTRY_AUTH_TLS_KEY)
+  auth: []
+  ca-cert: ""
+
+# specify the source behavior to use (e.g. docker, registry, oci-dir, ...) (env: SYFT_FROM)
+from: []
+
+# an optional platform specifier for container image sources (e.g. 'linux/arm64', 'linux/arm64/v8', 'arm64', 'linux') (env: SYFT_PLATFORM)
+platform: ""
+
+# exclude paths from being scanned using a glob expression (env: SYFT_EXCLUDE)
+exclude: []
+
+unknowns:
+  remove-when-packages-defined: true
+  executables-without-packages: true
+  unexpanded-archives: true
+
+show-hidden: false
+
+convert:
+  passthrough-exact-format: false
