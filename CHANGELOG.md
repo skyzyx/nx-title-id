@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 ### <!-- ZZZ -->:gear: Miscellaneous Tasks
 
 * [`a68f6c4`](https://github.com/skyzyx/nx-title-id/commit/a68f6c4dd017051f949c406133d09bf3c0bec345): Bump `version` to 1.1.0. ([@skyzyx](https://github.com/skyzyx))
+* [`be665df`](https://github.com/skyzyx/nx-title-id/commit/be665df41919abed47d2224eeb00c016229e1e2b): Add Syft configuration for SBOM generation. ([@skyzyx](https://github.com/skyzyx))
 
 ## 1.1.0 — 2026-11-06
 
@@ -50,4 +51,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com), adheres t
 
 * [`c739411`](https://github.com/skyzyx/nx-title-id/commit/c73941109850cd6386c0ea97def62e5db9c16b45): Set up nx-title-id project with complete tooling and infrastructure. ([@skyzyx](https://github.com/skyzyx))
 
-<p>Generated on 2026-11-06.</p>
+<p>Generated on 2026-11-09.</p>
